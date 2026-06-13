@@ -51,6 +51,7 @@ def build_menu_bar(window: object) -> None:
 
     help_menu = add_menu(window, "Aide")
     add_action(help_menu, "Ouvrir le guide HTML local", window.open_guide_html, "F1")
+    add_action(help_menu, "Verifier les mises a jour", window.check_for_updates)
     add_action(help_menu, "A propos de PlantTrace", lambda: show_about(window))
     window.planttrace_menus = [file_menu, edit_menu, view_menu, window_menu, tools_menu, help_menu]
 

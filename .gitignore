@@ -9,3 +9,5 @@ __pycache__/
 build/
 dist/
 pytest-cache-files-*/
+.tmp_tests/
+src.zip

@@ -106,10 +106,13 @@ QPushButton#dangerButton:hover {
     background: #ecd9d3;
 }
 QPushButton#folderButton {
-    background: #ffffff;
+    background: #e7ebe5;
     color: #1f2522;
-    border: 1px solid #c8cec7;
+    border: 1px solid #c4cbc2;
     min-width: 38px;
+}
+QPushButton#folderButton:hover {
+    background: #dce2da;
 }
 QFrame#sidePanel {
     background: #ffffff;
@@ -136,7 +139,7 @@ QPushButton#activityButton {
     background: transparent;
     color: #dfe6df;
     border: 0;
-    border-radius: 0;
+    border-radius: 8px;
     min-height: 42px;
     text-align: left;
     padding: 8px 10px;
@@ -244,5 +247,11 @@ QHeaderView::section {
 QStatusBar {
     background: #202723;
     color: #f5f7f3;
+}
+QLabel#versionLabel {
+    color: #9fb0a6;
+    font-size: 9pt;
+    font-weight: 600;
+    padding-right: 8px;
 }
 """

@@ -26,6 +26,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from . import __version__
 from .extractor import extract_references
 from .indexer import IndexReport
 from .models import ExtractionHit, ProjectPaths, SearchResult
@@ -47,7 +48,7 @@ from .ui.revisions_panel import RevisionsPanel
 from .ui.rules_panel import RulesPanel
 from .ui.templates_panel import TemplatesPanel
 from .ui.theme import APP_STYLESHEET
-from .ui.views import ACTIVITIES, build_activity_bar, build_stack, field_label, index_row, path_row, section_label
+from .ui.views import ACTIVITIES, ClickableLabel, build_activity_bar, build_stack, field_label, index_row, path_row, section_label
 from .ui.window_actions import NavigationActionsMixin, PathActionsMixin, app_icon_path
 from .ui.workers import EmbedWorker, IndexWorker
 
@@ -131,7 +132,14 @@ class MainWindow(PathActionsMixin, ExportActionsMixin, NavigationActionsMixin, Q
         container.setObjectName("appShell")
         container.setLayout(shell)
         self.setCentralWidget(container)
-        self.setStatusBar(QStatusBar())
+        status_bar = QStatusBar()
+        self.version_label = ClickableLabel(f"V{__version__}")
+        self.version_label.setObjectName("versionLabel")
+        self.version_label.setToolTip("Cliquer pour verifier les mises a jour")
+        self.version_label.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.version_label.clicked.connect(self.check_for_updates)
+        status_bar.addPermanentWidget(self.version_label)
+        self.setStatusBar(status_bar)
 
     def build_side_panel(self) -> QWidget:
         panel = QFrame()
@@ -153,7 +161,9 @@ class MainWindow(PathActionsMixin, ExportActionsMixin, NavigationActionsMixin, Q
         scroller.setWidgetResizable(True)
         scroller.setFrameShape(QFrame.Shape.NoFrame)
         scroller.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        scroller.viewport().setStyleSheet("background: #ffffff;")
+        viewport = scroller.viewport()
+        viewport.setObjectName("sideViewport")
+        viewport.setStyleSheet("QWidget#sideViewport { background: #ffffff; }")
         scroller.setWidget(widget)
         return scroller
 

@@ -6,7 +6,7 @@ PlantTrace is a local Windows-first desktop tool for industrial PDF cross-refere
 
 ## Non-negotiables
 
-- 100% local runtime: no cloud API, no telemetry, no network calls in index/search.
+- 100% local runtime: no cloud API, no telemetry, no network calls in index/search. The only sanctioned network touchpoint is `updates.py`, an explicit user-initiated check of the latest GitHub Release (no data sent).
 - Evidence first: every positive result must cite PDF path, page, excerpt, match type, and page status.
 - Absence is qualified: never say a reference is absent from the project unless the indexed/OCR coverage is complete.
 - Exact industrial matching beats semantic matching.

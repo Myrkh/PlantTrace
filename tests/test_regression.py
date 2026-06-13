@@ -14,6 +14,7 @@ from planttrace.normalization import compact_identifier, compact_ocr_identifier,
 from planttrace.rule_packs import export_rule_pack, import_rule_pack, load_preset_pack, project_rule_pack
 from planttrace.rules import load_rules, load_stoplist, save_rules, save_stoplist
 from planttrace.search import search
+from planttrace.updates import is_newer
 from tests.support import make_pdf, run_root
 
 
@@ -126,11 +127,25 @@ def test_export_results_xlsx_has_expected_headers() -> None:
     assert [cell.value for cell in sheet[1]][:4] == ["query", "match_type", "document_path", "page"]
 
 
+def test_is_newer_compares_versions_numerically() -> None:
+    assert is_newer("0.2.0", "0.1.0")
+    assert is_newer("0.10.0", "0.9.0")
+    assert is_newer("v0.1.1", "0.1.0")
+    assert not is_newer("0.1.0", "0.1.0")
+    assert not is_newer("0.1.0", "0.2.0")
+
+
 def test_runtime_has_no_network_imports() -> None:
     source_root = Path("src") / "planttrace"
     forbidden = ("requests", "httpx", "urllib", "socket")
+    # updates.py is the single sanctioned network module: an explicit, user-initiated
+    # check of the latest GitHub Release. The evidence pipeline (index/search/extract)
+    # must stay offline, so every other module is still scanned.
+    allowed = {"updates.py"}
     offenders: list[str] = []
     for path in source_root.rglob("*.py"):
+        if path.name in allowed:
+            continue
         text = path.read_text(encoding="utf-8")
         for name in forbidden:
             if f"import {name}" in text or f"from {name}" in text:

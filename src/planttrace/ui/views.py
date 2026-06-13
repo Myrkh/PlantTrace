@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from PySide6.QtCore import QEasingCurve, QParallelAnimationGroup, QPropertyAnimation, QSize, Qt
+from PySide6.QtCore import QEasingCurve, QParallelAnimationGroup, QPropertyAnimation, QSize, Qt, Signal
 from PySide6.QtWidgets import (
     QFrame,
     QHBoxLayout,
@@ -21,13 +21,22 @@ from .icons import activity_icon, line_icon, logo_pixmap
 ACTIVITIES = ["Recherche", "Corpus", "Inventaire", "Controle", "Livrables"]
 
 
+class ClickableLabel(QLabel):
+    clicked = Signal()
+
+    def mousePressEvent(self, event) -> None:
+        if event.button() == Qt.MouseButton.LeftButton:
+            self.clicked.emit()
+        super().mousePressEvent(event)
+
+
 def build_activity_bar(window: object) -> QWidget:
     bar = QFrame()
     bar.setObjectName("activityBar")
     bar.setFixedWidth(148)
     layout = QVBoxLayout(bar)
-    layout.setContentsMargins(0, 12, 0, 0)
-    layout.setSpacing(2)
+    layout.setContentsMargins(8, 12, 8, 8)
+    layout.setSpacing(3)
     window.activity_bar = bar
     window.activity_collapsed = False
 
@@ -152,7 +161,9 @@ def scroll_content(widget: QWidget) -> QScrollArea:
     scroller.setWidgetResizable(True)
     scroller.setFrameShape(QFrame.Shape.NoFrame)
     scroller.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-    scroller.viewport().setStyleSheet("background: #f4f5f3;")
+    viewport = scroller.viewport()
+    viewport.setObjectName("contentViewport")
+    viewport.setStyleSheet("QWidget#contentViewport { background: #f4f5f3; }")
     scroller.setWidget(widget)
     return scroller
 

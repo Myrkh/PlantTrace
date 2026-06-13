@@ -3,9 +3,11 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-from PySide6.QtCore import QUrl
+from PySide6.QtCore import Qt, QUrl
 from PySide6.QtGui import QDesktopServices
-from PySide6.QtWidgets import QFileDialog, QLineEdit
+from PySide6.QtWidgets import QApplication, QFileDialog, QLineEdit, QMessageBox
+
+from ..updates import check_for_update
 
 
 class PathActionsMixin:
@@ -31,6 +33,35 @@ class NavigationActionsMixin:
     def open_guide_html(self) -> None:
         guide = guide_html_path()
         QDesktopServices.openUrl(QUrl.fromLocalFile(str(guide)))
+
+    def check_for_updates(self) -> None:
+        QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
+        try:
+            info = check_for_update()
+        finally:
+            QApplication.restoreOverrideCursor()
+        if info is None:
+            QMessageBox.warning(self, "PlantTrace", "Verification impossible : aucune connexion a GitHub.")
+            return
+        if not info.available:
+            self._set_version_label(f"V{info.current}", up_to_date=True)
+            QMessageBox.information(self, "PlantTrace", f"PlantTrace est a jour (V{info.current}).")
+            return
+        self._set_version_label(f"V{info.current}  -  MAJ V{info.latest}", up_to_date=False)
+        answer = QMessageBox.question(
+            self,
+            "Mise a jour disponible",
+            f"Nouvelle version disponible.\n\nInstallee : V{info.current}\nDerniere : V{info.latest}\n\nOuvrir la page de telechargement ?",
+        )
+        if answer == QMessageBox.StandardButton.Yes:
+            QDesktopServices.openUrl(QUrl(info.url))
+
+    def _set_version_label(self, text: str, *, up_to_date: bool) -> None:
+        label = getattr(self, "version_label", None)
+        if label is None:
+            return
+        label.setText(text)
+        label.setStyleSheet("" if up_to_date else "color: #ffd479; font-weight: 700;")
 
 
 def guide_html_path() -> Path:
