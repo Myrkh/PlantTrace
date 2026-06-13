@@ -1,0 +1,11 @@
+.planttrace/
+.test-tmp/
+test-runs/
+__pycache__/
+*.pyc
+*.egg-info/
+*.xlsx
+*.csv
+build/
+dist/
+pytest-cache-files-*/

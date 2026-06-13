@@ -1,0 +1,1162 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PlantTrace Docs</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+
+      --bg: oklch(0.985 0.006 150);
+      --surface: oklch(1 0 0);
+      --surface-muted: oklch(0.962 0.008 150);
+      --surface-strong: oklch(0.93 0.01 150);
+      --ink: oklch(0.18 0.012 160);
+      --ink-soft: oklch(0.34 0.014 160);
+      --muted: oklch(0.49 0.018 160);
+      --line: oklch(0.86 0.011 150);
+      --line-soft: oklch(0.91 0.009 150);
+      --accent: oklch(0.45 0.085 170);
+      --accent-soft: oklch(0.91 0.035 170);
+      --accent-ink: oklch(0.985 0.006 150);
+      --warning: oklch(0.58 0.115 62);
+      --danger: oklch(0.53 0.13 27);
+      --success: oklch(0.47 0.095 152);
+
+      --font-sans: Inter, "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: "Cascadia Mono", "JetBrains Mono", Consolas, monospace;
+      --step--1: clamp(0.82rem, 0.79rem + 0.12vw, 0.9rem);
+      --step-0: clamp(0.94rem, 0.9rem + 0.18vw, 1.02rem);
+      --step-1: clamp(1.12rem, 1.04rem + 0.34vw, 1.28rem);
+      --step-2: clamp(1.38rem, 1.2rem + 0.76vw, 1.72rem);
+      --step-3: clamp(1.85rem, 1.52rem + 1.35vw, 2.48rem);
+
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 24px;
+      --space-6: 32px;
+      --space-7: 48px;
+      --space-8: 72px;
+
+      --radius-xs: 4px;
+      --radius-sm: 6px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+
+      --duration-instant: 50ms;
+      --duration-fast: 120ms;
+      --duration-normal: 200ms;
+      --duration-moderate: 300ms;
+      --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+      --ease-decelerate: cubic-bezier(0.05, 0.7, 0.1, 1);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: oklch(0.18 0.012 160);
+        --surface: oklch(0.225 0.012 160);
+        --surface-muted: oklch(0.255 0.012 160);
+        --surface-strong: oklch(0.29 0.012 160);
+        --ink: oklch(0.94 0.006 150);
+        --ink-soft: oklch(0.78 0.009 150);
+        --muted: oklch(0.67 0.012 150);
+        --line: oklch(0.36 0.012 160);
+        --line-soft: oklch(0.31 0.012 160);
+        --accent: oklch(0.67 0.085 170);
+        --accent-soft: oklch(0.3 0.035 170);
+        --accent-ink: oklch(0.14 0.012 160);
+      }
+    }
+
+    * { box-sizing: border-box; }
+
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: var(--space-6);
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--font-sans);
+      font-size: var(--step-0);
+      line-height: 1.55;
+      text-rendering: optimizeLegibility;
+      font-variant-numeric: tabular-nums lining-nums;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    code, .mono {
+      font-family: var(--font-mono);
+      font-size: 0.93em;
+    }
+
+    code {
+      padding: 0.12rem 0.34rem;
+      border: 1px solid var(--line-soft);
+      border-radius: var(--radius-xs);
+      background: var(--surface-muted);
+    }
+
+    .scroll-meter {
+      position: fixed;
+      inset: 0 0 auto 0;
+      z-index: 10;
+      height: 2px;
+      background: transparent;
+    }
+
+    .scroll-meter span {
+      display: block;
+      width: 0%;
+      height: 100%;
+      background: var(--accent);
+      transition: width var(--duration-fast) var(--ease-standard);
+    }
+
+    .shell {
+      display: grid;
+      grid-template-columns: 284px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      padding: var(--space-6) var(--space-5);
+      border-right: 1px solid var(--line);
+      background: color-mix(in oklch, var(--surface) 86%, var(--surface-muted));
+      overflow: auto;
+    }
+
+    .brand {
+      display: grid;
+      grid-template-columns: 42px 1fr;
+      gap: var(--space-3);
+      align-items: center;
+      margin-bottom: var(--space-6);
+    }
+
+    .mark {
+      position: relative;
+      width: 42px;
+      height: 42px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      background: var(--surface);
+    }
+
+    .mark::before,
+    .mark::after {
+      content: "";
+      position: absolute;
+      border-radius: 999px;
+    }
+
+    .mark::before {
+      inset: 9px 12px 12px 9px;
+      border: 2px solid var(--accent);
+    }
+
+    .mark::after {
+      right: 8px;
+      bottom: 8px;
+      width: 12px;
+      height: 12px;
+      border: 2px solid var(--ink);
+      background: var(--surface);
+      box-shadow: 7px 7px 0 -4px var(--accent);
+    }
+
+    .brand-title {
+      display: grid;
+      gap: 1px;
+    }
+
+    .brand-title strong {
+      font-size: var(--step-1);
+      letter-spacing: 0;
+    }
+
+    .brand-title span {
+      color: var(--muted);
+      font-size: var(--step--1);
+    }
+
+    .nav-group {
+      display: grid;
+      gap: var(--space-1);
+      margin-bottom: var(--space-6);
+    }
+
+    .nav-label {
+      margin: 0 0 var(--space-2);
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 34px;
+      padding: 0 var(--space-3);
+      border-radius: var(--radius-sm);
+      color: var(--ink-soft);
+      font-weight: 650;
+      transition:
+        background var(--duration-fast) var(--ease-standard),
+        color var(--duration-fast) var(--ease-standard),
+        transform var(--duration-fast) var(--ease-standard);
+    }
+
+    .nav-link:hover,
+    .nav-link.is-active {
+      background: var(--accent-soft);
+      color: var(--ink);
+      transform: translateX(1px);
+    }
+
+    .nav-link small {
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+
+    .trust-card {
+      padding: var(--space-4);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      background: var(--surface);
+      color: var(--muted);
+      font-size: var(--step--1);
+    }
+
+    .content {
+      width: min(1120px, 100%);
+      padding: var(--space-7) clamp(var(--space-5), 5vw, var(--space-8)) var(--space-8);
+    }
+
+    section {
+      margin-bottom: var(--space-8);
+      animation: rise var(--duration-moderate) var(--ease-decelerate) both;
+    }
+
+    section:target .section-title {
+      outline: 2px solid color-mix(in oklch, var(--accent) 44%, transparent);
+      outline-offset: 8px;
+      border-radius: var(--radius-sm);
+    }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      margin-bottom: var(--space-4);
+      padding: 0.32rem 0.56rem;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--surface);
+      color: var(--muted);
+      font-size: 0.76rem;
+      font-weight: 750;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    h1, h2, h3 {
+      margin: 0;
+      color: var(--ink);
+      line-height: 1.12;
+      letter-spacing: 0;
+      text-wrap: balance;
+    }
+
+    h1 {
+      max-width: 12ch;
+      font-size: var(--step-3);
+    }
+
+    h2 {
+      font-size: var(--step-2);
+    }
+
+    h3 {
+      font-size: var(--step-1);
+    }
+
+    p {
+      margin: 0;
+      color: var(--muted);
+      text-wrap: pretty;
+    }
+
+    .lead {
+      max-width: 66ch;
+      margin-top: var(--space-4);
+      color: var(--ink-soft);
+      font-size: var(--step-1);
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.3fr) minmax(280px, 0.7fr);
+      gap: var(--space-5);
+      align-items: start;
+      margin-top: var(--space-6);
+    }
+
+    .signal-panel {
+      padding: var(--space-5);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      background: var(--surface);
+    }
+
+    .signal-list {
+      display: grid;
+      gap: var(--space-3);
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .signal-list li {
+      display: grid;
+      grid-template-columns: 96px 1fr;
+      gap: var(--space-3);
+      align-items: start;
+      padding-bottom: var(--space-3);
+      border-bottom: 1px solid var(--line-soft);
+    }
+
+    .signal-list li:last-child {
+      padding-bottom: 0;
+      border-bottom: 0;
+    }
+
+    .signal-list strong {
+      color: var(--ink);
+      font-size: var(--step--1);
+    }
+
+    .metric-row,
+    .card-grid,
+    .workflow-grid {
+      display: grid;
+      gap: var(--space-3);
+    }
+
+    .metric-row {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin-top: var(--space-5);
+    }
+
+    .metric {
+      min-height: 92px;
+      padding: var(--space-4);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      background: var(--surface);
+    }
+
+    .metric strong {
+      display: block;
+      margin-bottom: var(--space-2);
+      font-size: var(--step-1);
+    }
+
+    .metric span {
+      color: var(--muted);
+      font-size: var(--step--1);
+    }
+
+    .section-head {
+      display: grid;
+      gap: var(--space-3);
+      max-width: 780px;
+      margin-bottom: var(--space-5);
+    }
+
+    .card-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .workflow-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .card,
+    .workflow,
+    .callout {
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      background: var(--surface);
+    }
+
+    .card {
+      min-height: 168px;
+      padding: var(--space-4);
+      transition:
+        border-color var(--duration-fast) var(--ease-standard),
+        transform var(--duration-fast) var(--ease-standard),
+        background var(--duration-fast) var(--ease-standard);
+    }
+
+    .card:hover {
+      border-color: color-mix(in oklch, var(--accent) 42%, var(--line));
+      background: color-mix(in oklch, var(--surface) 88%, var(--accent-soft));
+      transform: translateY(-1px);
+    }
+
+    .card h3 {
+      margin-bottom: var(--space-2);
+    }
+
+    .card p {
+      font-size: var(--step--1);
+    }
+
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      margin-top: var(--space-4);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 0 var(--space-2);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--surface-muted);
+      color: var(--ink-soft);
+      font-size: 0.74rem;
+      font-weight: 750;
+    }
+
+    .badge.success {
+      border-color: color-mix(in oklch, var(--success) 30%, var(--line));
+      color: var(--success);
+    }
+
+    .badge.warning {
+      border-color: color-mix(in oklch, var(--warning) 32%, var(--line));
+      color: var(--warning);
+    }
+
+    .workflow {
+      padding: var(--space-5);
+    }
+
+    .workflow ol,
+    .clean-list {
+      display: grid;
+      gap: var(--space-3);
+      margin: var(--space-4) 0 0;
+      padding-left: 1.2rem;
+      color: var(--ink-soft);
+    }
+
+    .workflow li::marker,
+    .clean-list li::marker {
+      color: var(--accent);
+      font-weight: 800;
+    }
+
+    .callout {
+      display: grid;
+      gap: var(--space-2);
+      padding: var(--space-5);
+      background: var(--surface-muted);
+    }
+
+    .callout strong {
+      color: var(--ink);
+    }
+
+    .table-wrap {
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      background: var(--surface);
+    }
+
+    .table-wrap.with-gap {
+      margin-bottom: var(--space-5);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 720px;
+    }
+
+    th,
+    td {
+      padding: 13px 14px;
+      border-bottom: 1px solid var(--line-soft);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: var(--surface-muted);
+      color: var(--ink);
+      font-size: 0.76rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    td {
+      color: var(--ink-soft);
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    details {
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      background: var(--surface);
+      overflow: hidden;
+    }
+
+    details + details {
+      margin-top: var(--space-3);
+    }
+
+    summary {
+      cursor: pointer;
+      padding: var(--space-4) var(--space-5);
+      color: var(--ink);
+      font-weight: 760;
+      list-style: none;
+    }
+
+    summary::-webkit-details-marker {
+      display: none;
+    }
+
+    summary::after {
+      content: "+";
+      float: right;
+      color: var(--accent);
+      font-weight: 900;
+    }
+
+    details[open] summary::after {
+      content: "-";
+    }
+
+    .details-body {
+      display: grid;
+      gap: var(--space-3);
+      padding: 0 var(--space-5) var(--space-5);
+      color: var(--muted);
+    }
+
+    .rule-builder {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-3);
+    }
+
+    .form-ghost {
+      display: grid;
+      gap: var(--space-3);
+      padding: var(--space-4);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      background: var(--surface);
+    }
+
+    .field {
+      display: grid;
+      gap: var(--space-1);
+    }
+
+    .field span {
+      color: var(--muted);
+      font-size: var(--step--1);
+      font-weight: 700;
+    }
+
+    .input-fake {
+      min-height: 38px;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      background: var(--surface-muted);
+      color: var(--ink-soft);
+      font-family: var(--font-mono);
+      font-size: 0.86rem;
+    }
+
+    .footer {
+      padding-top: var(--space-5);
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: var(--step--1);
+    }
+
+    @media (max-width: 980px) {
+      .shell {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: relative;
+        height: auto;
+      }
+
+      .content {
+        padding: var(--space-6) var(--space-5) var(--space-8);
+      }
+
+      .hero-grid,
+      .workflow-grid,
+      .rule-builder {
+        grid-template-columns: 1fr;
+      }
+
+      .metric-row,
+      .card-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 640px) {
+      .metric-row,
+      .card-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .signal-list li {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 1ms !important;
+        transition-duration: 1ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="scroll-meter" aria-hidden="true"><span id="scroll-progress"></span></div>
+  <div class="shell">
+    <aside class="sidebar">
+      <a class="brand" href="#top" aria-label="Accueil PlantTrace Docs">
+        <span class="mark" aria-hidden="true"></span>
+        <span class="brand-title">
+          <strong>PlantTrace</strong>
+          <span>Documentation locale</span>
+        </span>
+      </a>
+
+      <div class="nav-group">
+        <p class="nav-label">Lire dans l'ordre</p>
+        <a class="nav-link" href="#quickstart">Démarrage <small>01</small></a>
+        <a class="nav-link" href="#workflow">Workflow <small>02</small></a>
+        <a class="nav-link" href="#activities">Écrans <small>03</small></a>
+        <a class="nav-link" href="#rules">Règles <small>04</small></a>
+        <a class="nav-link" href="#deliverables">Livrables <small>05</small></a>
+        <a class="nav-link" href="#quality">Confiance <small>06</small></a>
+      </div>
+
+      <div class="nav-group">
+        <p class="nav-label">Référence rapide</p>
+        <a class="nav-link" href="#modes">Tous les modes</a>
+        <a class="nav-link" href="#ocr">OCR et absence</a>
+        <a class="nav-link" href="#packaging">Distribution</a>
+      </div>
+
+      <div class="trust-card">
+        PlantTrace ne remplace pas le jugement documentaire. Il accélère la preuve&nbsp;: fichier, page, extrait, type de match et état OCR.
+      </div>
+    </aside>
+
+    <main id="top" class="content">
+      <section class="hero">
+        <span class="eyebrow">PDF CrossRef industriel</span>
+        <h1>Retrouver la preuve, pas juste un résultat.</h1>
+        <p class="lead">
+          PlantTrace indexe un corpus massif de PDF locaux puis aide à chercher, extraire,
+          croiser et exporter les références métier avec une exigence simple&nbsp;:
+          chaque résultat utile doit revenir à une page vérifiable.
+        </p>
+
+        <div class="hero-grid">
+          <div class="metric-row" aria-label="Principes PlantTrace">
+            <div class="metric">
+              <strong>100&nbsp;% local</strong>
+              <span>Pas de cloud, pas de télémétrie, pas de fuite documentaire.</span>
+            </div>
+            <div class="metric">
+              <strong>PDF 1000+</strong>
+              <span>Conçu pour les dossiers projet lourds et hétérogènes.</span>
+            </div>
+            <div class="metric">
+              <strong>Preuve page</strong>
+              <span>Chemin PDF, page, extrait, statut page et statut document.</span>
+            </div>
+            <div class="metric">
+              <strong>Excel / ZIP</strong>
+              <span>Livrables exploitables directement en revue projet.</span>
+            </div>
+          </div>
+
+          <div class="signal-panel">
+            <ul class="signal-list">
+              <li><strong>Priorité</strong><span>Exact industriel&nbsp;: TAG, ligne, document, initiales.</span></li>
+              <li><strong>Usage</strong><span>Rechercher où une référence apparaît et produire des tables propres.</span></li>
+              <li><strong>Limite saine</strong><span>Une absence vaut seulement dans le corpus indexé et OCRisé.</span></li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="quickstart">
+        <div class="section-head">
+          <h2 class="section-title">Démarrage en 7 minutes</h2>
+          <p>Le chemin normal pour un nouveau projet est volontairement court. On prépare le corpus, on vérifie la couverture, puis on cherche ou on extrait.</p>
+        </div>
+
+        <div class="workflow-grid">
+          <article class="workflow">
+            <h3>Premier lancement</h3>
+            <ol>
+              <li>Ouvrir PlantTrace et choisir le dossier d'index local.</li>
+              <li>Choisir le dossier source qui contient les PDF.</li>
+              <li>Cliquer <code>Indexer</code> et attendre le statut final.</li>
+              <li>Ouvrir <code>Couverture</code> pour contrôler pages texte, OCR requis et échecs.</li>
+              <li>Aller dans <code>Recherche</code> et tester une référence connue&nbsp;: <code>FV1100</code>, <code>JDY</code>, <code>10-P-12345</code>.</li>
+            </ol>
+          </article>
+
+          <article class="workflow">
+            <h3>Règle de lecture</h3>
+            <ol>
+              <li>Un résultat positif doit être lu avec son PDF, sa page et son extrait.</li>
+              <li>Un score flou aide à prioriser, il ne prouve pas seul.</li>
+              <li>Une extraction est pilotée par les règles projet actives.</li>
+              <li>Un export est un livrable de travail, pas une vérité documentaire absolue.</li>
+              <li>Si des pages ne sont pas OCRisées, qualifier l'absence.</li>
+            </ol>
+          </article>
+        </div>
+      </section>
+
+      <section id="workflow">
+        <div class="section-head">
+          <h2 class="section-title">Workflow recommandé</h2>
+          <p>Ce workflow évite la confusion entre recherche, extraction et livrable. Il garde la preuve au centre.</p>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Étape</th>
+                <th>Écran</th>
+                <th>But</th>
+                <th>Validation attendue</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>1</td>
+                <td><code>Recherche</code></td>
+                <td>Choisir corpus, indexer et tester une référence témoin.</td>
+                <td>Résultats avec fichier, page et extrait.</td>
+              </tr>
+              <tr>
+                <td>2</td>
+                <td><code>Couverture</code></td>
+                <td>Mesurer ce qui est réellement lisible.</td>
+                <td>Liste claire des PDF OK, OCR requis et pages échouées.</td>
+              </tr>
+              <tr>
+                <td>3</td>
+                <td><code>Règles</code></td>
+                <td>Adapter la reconnaissance au projet.</td>
+                <td>Règles testées sur un extrait réel puis sauvegardées.</td>
+              </tr>
+              <tr>
+                <td>4</td>
+                <td><code>Extraction</code></td>
+                <td>Inventorier TAG, lignes, documents, initiales.</td>
+                <td>Candidats typés avec confiance et page source.</td>
+              </tr>
+              <tr>
+                <td>5</td>
+                <td><code>Fiche</code>, <code>Matrice</code>, <code>Templates</code></td>
+                <td>Croiser les références et préparer les tableaux métier.</td>
+                <td>Associations vérifiables avec extraits.</td>
+              </tr>
+              <tr>
+                <td>6</td>
+                <td><code>Conflits</code>, <code>Revisions</code></td>
+                <td>Détecter incohérences et changements entre lots.</td>
+                <td>Écarts exportables pour revue projet.</td>
+              </tr>
+              <tr>
+                <td>7</td>
+                <td><code>Exports</code></td>
+                <td>Créer le pack de sortie.</td>
+                <td>Excel ou ZIP prêt à partager.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="activities">
+        <div class="section-head">
+          <h2 class="section-title">Navigation PlantTrace</h2>
+          <p>L'activity bar reste volontairement courte. Les anciens écrans sont regroupés en cinq activités métier, puis accessibles par onglets internes.</p>
+        </div>
+
+        <div class="table-wrap with-gap">
+          <table>
+            <thead>
+              <tr>
+                <th>Activité</th>
+                <th>Onglets</th>
+                <th>Intention</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>Recherche</code></td>
+                <td>Recherche, Fiche</td>
+                <td>Trouver une référence ou consolider une fiche de preuve.</td>
+              </tr>
+              <tr>
+                <td><code>Corpus</code></td>
+                <td>Couverture, Familles</td>
+                <td>Comprendre ce qui est indexé, lisible, OCRisé et classé.</td>
+              </tr>
+              <tr>
+                <td><code>Inventaire</code></td>
+                <td>Règles, Extraction, Templates</td>
+                <td>Définir les formats projet puis produire les inventaires.</td>
+              </tr>
+              <tr>
+                <td><code>Controle</code></td>
+                <td>Batch, Matrice, Conflits, Révisions</td>
+                <td>Comparer, croiser, vérifier et identifier les écarts.</td>
+              </tr>
+              <tr>
+                <td><code>Livrables</code></td>
+                <td>Exports</td>
+                <td>Produire les fichiers Excel et le pack ZIP de revue.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div id="modes" class="card-grid">
+          <article class="card">
+            <h3>Recherche</h3>
+            <p>Question ponctuelle&nbsp;: où apparaît <code>FV1100</code>, <code>Bouygues</code> ou une ligne tuyauterie&nbsp;?</p>
+            <div class="badge-row"><span class="badge success">Preuve page</span><span class="badge">Excel</span></div>
+          </article>
+
+          <article class="card">
+            <h3>Fiche</h3>
+            <p>Vue synthétique d'une référence&nbsp;: occurrences, associations probables, alertes et export dédié.</p>
+            <div class="badge-row"><span class="badge">TAG centré</span><span class="badge warning">Conflits</span></div>
+          </article>
+
+          <article class="card">
+            <h3>Extraction</h3>
+            <p>Inventaire automatique piloté par les règles actives&nbsp;: TAG, LINE, DOC, INITIALS.</p>
+            <div class="badge-row"><span class="badge success">Règles projet</span><span class="badge">XLSX</span></div>
+          </article>
+
+          <article class="card">
+            <h3>Templates</h3>
+            <p>Tableaux préformatés, comme un registre TAG avec description, documents et lignes associées.</p>
+            <div class="badge-row"><span class="badge">Registre</span><span class="badge">Métier</span></div>
+          </article>
+
+          <article class="card">
+            <h3>Matrice</h3>
+            <p>Vision croisée des références et des types associés, utile pour repérer les liens documentaires.</p>
+            <div class="badge-row"><span class="badge">Cross-reference</span><span class="badge">Associations</span></div>
+          </article>
+
+          <article class="card">
+            <h3>Familles</h3>
+            <p>Classement documentaire par familles projet pour comprendre ce que contient le corpus.</p>
+            <div class="badge-row"><span class="badge">PID</span><span class="badge">Loop</span><span class="badge">Vendor</span></div>
+          </article>
+
+          <article class="card">
+            <h3>Batch</h3>
+            <p>Recherche massive depuis une liste de références. Idéal pour 500 TAG à vérifier.</p>
+            <div class="badge-row"><span class="badge success">Liste entrée</span><span class="badge">Matrice</span></div>
+          </article>
+
+          <article class="card">
+            <h3>Conflits</h3>
+            <p>Détection de valeurs contradictoires associées à une même référence, par exemple deux lignes pour un TAG.</p>
+            <div class="badge-row"><span class="badge warning">À arbitrer</span><span class="badge">Revue</span></div>
+          </article>
+
+          <article class="card">
+            <h3>Révisions</h3>
+            <p>Comparaison ancien lot / nouveau lot pour identifier ajouts, suppressions et modifications.</p>
+            <div class="badge-row"><span class="badge">Old/New</span><span class="badge">Delta</span></div>
+          </article>
+
+          <article class="card">
+            <h3>Règles</h3>
+            <p>Constructeur métier pour définir ce qu'est un TAG, une ligne, un document ou une initiale sur ce projet.</p>
+            <div class="badge-row"><span class="badge success">Sans regex visible</span><span class="badge">Pack JSON</span></div>
+          </article>
+
+          <article class="card">
+            <h3>Couverture</h3>
+            <p>État de santé du corpus&nbsp;: documents indexés, pages lisibles, OCR requis, OCR échoué.</p>
+            <div class="badge-row"><span class="badge warning">Absence qualifiée</span><span class="badge">OCR</span></div>
+          </article>
+
+          <article class="card">
+            <h3>Exports</h3>
+            <p>Centre de sortie&nbsp;: recherche, batch, extraction, fiche, matrice, conflits, révisions, couverture et ZIP.</p>
+            <div class="badge-row"><span class="badge">XLSX</span><span class="badge">ZIP</span></div>
+          </article>
+        </div>
+      </section>
+
+      <section id="rules">
+        <div class="section-head">
+          <h2 class="section-title">Créer des règles projet</h2>
+          <p>Une règle explique à PlantTrace ce qu'il doit reconnaître. L'utilisateur règle des champs métier&nbsp;; PlantTrace génère le pattern technique.</p>
+        </div>
+
+        <div class="rule-builder">
+          <div class="form-ghost" aria-label="Exemple de constructeur de règle">
+            <div class="field">
+              <span>Modèle métier</span>
+              <div class="input-fake">Tag instrument</div>
+            </div>
+            <div class="field">
+              <span>Préfixes autorisés</span>
+              <div class="input-fake">FV, PV, PT, TT, XV</div>
+            </div>
+            <div class="field">
+              <span>Chiffres</span>
+              <div class="input-fake">min 3 / max 5</div>
+            </div>
+            <div class="field">
+              <span>Séparateurs</span>
+              <div class="input-fake">aucun, -, _, espace</div>
+            </div>
+            <div class="field">
+              <span>Exemples valides</span>
+              <div class="input-fake">FV1100, FV-1100, PT2045A</div>
+            </div>
+          </div>
+
+          <div class="callout">
+            <strong>Workflow règle</strong>
+            <p>Choisir un modèle, renseigner les exemples du projet, cliquer <code>Tester</code> sur un extrait réel, puis <code>Créer</code> ou <code>Modifier</code>. Cliquer <code>Sauver</code> écrit le registre dans le dossier projet.</p>
+            <p>Les boutons <code>Importer pack</code> et <code>Exporter pack</code> servent à réutiliser une configuration de règles entre projets ou équipes.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="deliverables">
+        <div class="section-head">
+          <h2 class="section-title">Livrables disponibles</h2>
+          <p>Les exports sont pensés pour être ouverts directement dans Excel ou transmis dans un pack de revue.</p>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Livrable</th>
+                <th>Source</th>
+                <th>Contenu utile</th>
+                <th>Quand l'utiliser</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Recherche XLSX</td>
+                <td><code>Recherche</code></td>
+                <td>Occurrences, pages, extraits, score, statut.</td>
+                <td>Réponse ciblée à une question projet.</td>
+              </tr>
+              <tr>
+                <td>Extraction XLSX</td>
+                <td><code>Extraction</code></td>
+                <td>Toutes les références candidates typées.</td>
+                <td>Construire un inventaire contrôlable.</td>
+              </tr>
+              <tr>
+                <td>Batch XLSX</td>
+                <td><code>Batch</code></td>
+                <td>Liste entrée contre corpus indexé.</td>
+                <td>Vérifier une liste existante de TAG.</td>
+              </tr>
+              <tr>
+                <td>Fiche XLSX</td>
+                <td><code>Fiche</code></td>
+                <td>Occurrences, associations, alertes.</td>
+                <td>Analyser un TAG critique.</td>
+              </tr>
+              <tr>
+                <td>Template XLSX</td>
+                <td><code>Templates</code></td>
+                <td>Registre préformaté, par exemple TAG / description / document / ligne.</td>
+                <td>Produire une table métier prête à compléter.</td>
+              </tr>
+              <tr>
+                <td>Pack ZIP</td>
+                <td><code>Exports</code></td>
+                <td>Ensemble des livrables et rapports disponibles.</td>
+                <td>Transmettre un lot de revue documentaire.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="quality">
+        <div class="section-head">
+          <h2 class="section-title">Confiance et preuve</h2>
+          <p>PlantTrace est volontairement strict&nbsp;: il indique ce qu'il a vu, où il l'a vu, et dans quelles conditions de couverture.</p>
+        </div>
+
+        <div class="workflow-grid">
+          <article id="ocr" class="callout">
+            <strong>OCR et absence</strong>
+            <p>Si une page est scannée sans texte et que l'OCR n'a pas tourné ou a échoué, PlantTrace ne peut pas prouver qu'une référence est absente de cette page.</p>
+            <p>Avant de conclure "non trouvé", vérifier <code>Couverture</code> et exporter le triage OCR si nécessaire.</p>
+          </article>
+
+          <article class="callout">
+            <strong>Vectoriel / sémantique</strong>
+            <p>La recherche vectorielle peut aider sur des idées floues comme "fournisseur café". Pour les TAG, lignes et numéros documentaires, la preuve doit rester déterministe&nbsp;: normalisation, exact match, règles et extrait.</p>
+          </article>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-head">
+          <h2 class="section-title">Mode opératoire détaillé</h2>
+          <p>Ces notes sont courtes volontairement. Elles servent de rappel pendant l'utilisation, pas de manuel théorique.</p>
+        </div>
+
+        <details open>
+          <summary>Recherche ponctuelle</summary>
+          <div class="details-body">
+            <p>Taper la référence, choisir le mode de recherche, cliquer <code>Chercher</code>. Lire d'abord les matches exacts ou normalisés, puis les résultats flous si la référence peut être mal écrite.</p>
+            <p>Double-cliquer un résultat ouvre le PDF source.</p>
+          </div>
+        </details>
+
+        <details>
+          <summary>Extraction projet</summary>
+          <div class="details-body">
+            <p>Vérifier que les règles sont actives, puis cliquer <code>Extraire</code>. Les colonnes importantes sont <code>Type</code>, <code>Valeur</code>, <code>Règle</code>, <code>Fichier</code>, <code>Page</code> et <code>Confiance</code>.</p>
+          </div>
+        </details>
+
+        <details>
+          <summary>Conflits et révisions</summary>
+          <div class="details-body">
+            <p><code>Conflits</code> repère les associations incohérentes dans un corpus. <code>Revisions</code> compare deux dossiers PDF et remonte les références ajoutées, retirées ou modifiées.</p>
+          </div>
+        </details>
+
+        <details>
+          <summary>Templates de tableau</summary>
+          <div class="details-body">
+            <p>Utiliser <code>Templates</code> quand la sortie attendue a une forme précise. Exemple&nbsp;: un registre TAG avec les associations documentaires déjà pré-remplies.</p>
+          </div>
+        </details>
+      </section>
+
+      <section id="packaging">
+        <div class="section-head">
+          <h2 class="section-title">Distribution en entreprise</h2>
+          <p>Le guide est local et embarquable. L'étape suivante est le packaging Windows pour fournir un lancement double-clic sans demander aux collègues de manipuler Python.</p>
+        </div>
+
+        <div class="callout">
+          <strong>Objectif packaging</strong>
+          <p>Un dossier ou installeur Windows contenant l'application, les dépendances Python gelées, les assets, la documentation HTML et les commandes nécessaires. Le runtime d'indexation et de recherche reste local.</p>
+        </div>
+      </section>
+
+      <footer class="footer">
+        PlantTrace Docs. Page locale autonome, sans CDN, sans police distante, sans appel réseau.
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    (() => {
+      const progress = document.getElementById("scroll-progress");
+      const links = [...document.querySelectorAll(".nav-link")];
+      const sections = links
+        .map((link) => document.querySelector(link.getAttribute("href")))
+        .filter(Boolean);
+
+      const updateProgress = () => {
+        const max = document.documentElement.scrollHeight - window.innerHeight;
+        const ratio = max > 0 ? window.scrollY / max : 0;
+        progress.style.width = `${Math.max(0, Math.min(1, ratio)) * 100}%`;
+      };
+
+      const observer = "IntersectionObserver" in window
+        ? new IntersectionObserver((entries) => {
+            const visible = entries
+              .filter((entry) => entry.isIntersecting)
+              .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+            if (!visible) return;
+            links.forEach((link) => {
+              link.classList.toggle("is-active", link.getAttribute("href") === `#${visible.target.id}`);
+            });
+          }, { rootMargin: "-20% 0px -68% 0px", threshold: [0.1, 0.35, 0.6] })
+        : null;
+
+      sections.forEach((section) => observer?.observe(section));
+      updateProgress();
+      window.addEventListener("scroll", updateProgress, { passive: true });
+    })();
+  </script>
+</body>
+</html>
