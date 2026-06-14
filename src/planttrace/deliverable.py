@@ -62,6 +62,7 @@ def build_deliverable_pack(
     project_matrix: list[ProjectMatrixRow] | None = None,
     template_run: TemplateRun | None = None,
     master_register: MasterRegisterResult | None = None,
+    with_snippets: bool = True,
 ) -> DeliverablePack:
     root = Path(project_root).resolve()
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -105,6 +106,8 @@ def build_deliverable_pack(
     included.extend(["README.txt", "manifest.json"])
     if search_results:
         add_xlsx(files, included, "exports/search-results.xlsx", [result_to_row(result) for result in search_results], HEADERS, "search")
+    if with_snippets and search_results:
+        add_evidence_snippets(files, included, search_results)
     if batch_results:
         add_xlsx(files, included, "exports/batch-matrix.xlsx", [batch_to_row(result) for result in batch_results], BATCH_HEADERS, "batch")
     if extraction_hits:
@@ -132,6 +135,7 @@ def build_deliverable_pack(
         included.append("audit/absences-qualifiees.csv")
         files.append(("audit/absences-qualifiees.csv", absences_csv_bytes(batch_results, coverage_verdict(coverage_summary))))
 
+    manifest["counts"]["evidence_snippets"] = sum(1 for name in included if name.startswith("evidence-snippets/"))
     manifest["included_files"] = included
     with ZipFile(output, "w", compression=ZIP_DEFLATED) as archive:
         archive.writestr("README.txt", readme_text(manifest, batch_results))
@@ -151,6 +155,28 @@ def add_file(files: list[tuple[str, bytes | str]], included: list[str], name: st
         return
     included.append(name)
     files.append((name, path.read_bytes()))
+
+
+def add_evidence_snippets(files: list[tuple[str, bytes | str]], included: list[str], results: list[SearchResult], limit: int = 50) -> None:
+    from .pdf_engine import crop_evidence_png
+
+    count = 0
+    for index, result in enumerate(results, start=1):
+        if count >= limit:
+            break
+        if not result.document_path or result.page is None or result.page_status in {"ocr_required", "ocr_failed"}:
+            continue
+        terms = [term for term in (result.found_as, result.query) if term]
+        try:
+            png = crop_evidence_png(result.document_path, result.page, terms)
+        except Exception:
+            png = None
+        if png is None:
+            continue
+        name = f"evidence-snippets/{index:03d}_{Path(result.document_path).stem}_p{result.page}.png"
+        included.append(name)
+        files.append((name, png))
+        count += 1
 
 
 def xlsx_bytes(rows: list[dict[str, object]], headers: list[str], sheet_name: str) -> bytes:

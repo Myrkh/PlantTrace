@@ -202,6 +202,18 @@ def test_changelog_is_well_formed() -> None:
             assert all(isinstance(item, str) and item for item in section.items)
 
 
+def test_crop_evidence_png_produces_snippet() -> None:
+    from planttrace.pdf_engine import crop_evidence_png
+
+    root = run_root()
+    pdf = root / "loop.pdf"
+    make_pdf(pdf, ["FV-1100 appears here.", "nothing relevant on this page"])
+
+    png = crop_evidence_png(str(pdf), 1, ["FV-1100"])
+    assert png is not None and png[:8] == b"\x89PNG\r\n\x1a\n"
+    assert crop_evidence_png(str(pdf), 2, ["FV-1100"]) is None
+
+
 def test_is_newer_compares_versions_numerically() -> None:
     assert is_newer("0.2.0", "0.1.0")
     assert is_newer("0.10.0", "0.9.0")

@@ -92,3 +92,23 @@ def render_page_preview(
                 rects.append((rect.x0 * zoom, rect.y0 * zoom, rect.x1 * zoom, rect.y1 * zoom))
         pixmap = page.get_pixmap(matrix=fitz.Matrix(zoom, zoom), alpha=False)
         return pixmap.tobytes("png"), rects
+
+
+def crop_evidence_png(document_path: str, page_number: int, terms: list[str], zoom: float = 2.0, margin: float = 40.0) -> bytes | None:
+    """Crop d'une page autour du surlignage du terme : piece de preuve visuelle. None si rien a surligner."""
+    from PIL import Image, ImageDraw
+
+    png, rects = render_page_preview(Path(document_path), page_number, terms, zoom)
+    if not rects:
+        return None
+    image = Image.open(BytesIO(png)).convert("RGB")
+    overlay = ImageDraw.Draw(image, "RGBA")
+    for x0, y0, x1, y1 in rects:
+        overlay.rectangle((x0, y0, x1, y1), fill=(255, 214, 10, 90))
+    left = max(int(min(rect[0] for rect in rects) - margin), 0)
+    top = max(int(min(rect[1] for rect in rects) - margin), 0)
+    right = min(int(max(rect[2] for rect in rects) + margin), image.width)
+    bottom = min(int(max(rect[3] for rect in rects) + margin), image.height)
+    output = BytesIO()
+    image.crop((left, top, right, bottom)).save(output, format="PNG")
+    return output.getvalue()
