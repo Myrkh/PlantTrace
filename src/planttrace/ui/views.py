@@ -17,7 +17,7 @@ from PySide6.QtWidgets import (
     QStyle,
 )
 
-from .icons import activity_icon, line_icon, logo_pixmap
+from .icons import activity_icon, line_icon
 
 ACTIVITIES = ["Recherche", "Corpus", "Inventaire", "Controle", "Livrables"]
 
@@ -41,18 +41,14 @@ def build_activity_bar(window: object) -> QWidget:
     window.activity_bar = bar
     window.activity_collapsed = False
 
-    brand = QFrame()
-    brand.setObjectName("brandBlock")
-    brand_layout = QHBoxLayout(brand)
-    brand_layout.setContentsMargins(10, 8, 8, 10)
-    logo = QLabel()
-    logo.setPixmap(logo_pixmap(34))
-    title = QLabel("PlantTrace")
-    title.setObjectName("brandTitle")
-    brand_layout.addWidget(logo)
-    brand_layout.addWidget(title)
-    window.activity_brand_title = title
-    layout.addWidget(brand)
+    palette_button = QPushButton("Rechercher")
+    palette_button.setObjectName("paletteLauncher")
+    palette_button.setIcon(line_icon("search"))
+    palette_button.setIconSize(QSize(18, 18))
+    palette_button.setToolTip("Palette de commande (Ctrl+Maj+P)")
+    palette_button.clicked.connect(window.open_command_palette)
+    window.activity_palette_button = palette_button
+    layout.addWidget(palette_button)
 
     buttons: list[QPushButton] = []
     window.activity_buttons = buttons
@@ -88,8 +84,8 @@ def set_activity_bar_collapsed(window: object, buttons: list[QPushButton], toggl
         return
     window.activity_collapsed = collapsed
     animate_activity_bar_width(window, 62 if window.activity_collapsed else 148)
-    window.activity_brand_title.setVisible(not window.activity_collapsed)
-    toggle.setText(">" if window.activity_collapsed else "Replier")
+    window.activity_palette_button.setText("" if window.activity_collapsed else "Rechercher")
+    toggle.setText("" if window.activity_collapsed else "Replier")
     toggle.setIcon(line_icon("expand" if window.activity_collapsed else "collapse"))
     toggle.setIconSize(QSize(18, 18))
     toggle.setToolTip("Deplier la barre d'activite" if window.activity_collapsed else "Replier la barre d'activite")

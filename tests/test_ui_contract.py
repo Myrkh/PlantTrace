@@ -76,7 +76,7 @@ def test_main_window_constructs_without_event_loop() -> None:
     assert any(button.text() == "Indexer" for button in window.findChildren(QPushButton))
     window.activity_toggle_button.click()
     assert window.activity_collapsed is True
-    assert window.activity_toggle_button.text() == ">"
+    assert window.activity_toggle_button.text() == ""
     assert not window.activity_toggle_button.icon().isNull()
     window.activity_toggle_button.click()
     assert window.activity_collapsed is False

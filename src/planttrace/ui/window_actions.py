@@ -35,6 +35,11 @@ class NavigationActionsMixin:
         guide = guide_html_path()
         QDesktopServices.openUrl(QUrl.fromLocalFile(str(guide)))
 
+    def open_command_palette(self) -> None:
+        from planttrace.ui.command_palette import open_command_palette
+
+        open_command_palette(self)
+
     def check_for_updates(self) -> None:
         QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
         try:

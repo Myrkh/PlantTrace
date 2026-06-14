@@ -170,10 +170,18 @@ QPushButton#activityButton:checked {
     background: #2f6f62;
     color: #ffffff;
 }
-QLabel#brandTitle {
-    color: #f5f7f3;
-    font-size: 12pt;
-    font-weight: 800;
+QPushButton#paletteLauncher {
+    background: #2a322d;
+    color: #cdd6cf;
+    border: 1px solid #36403a;
+    border-radius: 8px;
+    text-align: left;
+    padding: 8px 10px;
+    min-height: 36px;
+    font-weight: 600;
+}
+QPushButton#paletteLauncher:hover {
+    background: #323b35;
 }
 QLabel#appTitle {
     font-size: 18pt;
