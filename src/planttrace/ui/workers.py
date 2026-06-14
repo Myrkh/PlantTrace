@@ -8,6 +8,7 @@ from planttrace.indexer import index_folder
 from planttrace.master_register import MasterRegisterConfig, build_master_register
 from planttrace.revisions import compare_revision_folders
 from planttrace.semantic import rebuild_embeddings
+from planttrace.updates import download_release
 
 
 class IndexWorker(QObject):
@@ -59,6 +60,24 @@ class MasterRegisterWorker(QObject):
     def run(self) -> None:
         try:
             self.finished.emit(build_master_register(self.config, self.project_root))
+        except Exception as exc:
+            self.failed.emit(str(exc))
+
+
+class DownloadWorker(QObject):
+    progress = Signal(int)
+    finished = Signal(object)
+    failed = Signal(str)
+
+    def __init__(self, url: str, dest: Path) -> None:
+        super().__init__()
+        self.url = url
+        self.dest = dest
+
+    @Slot()
+    def run(self) -> None:
+        try:
+            self.finished.emit(download_release(self.url, self.dest, self.progress.emit))
         except Exception as exc:
             self.failed.emit(str(exc))
 

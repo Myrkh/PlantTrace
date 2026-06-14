@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 import urllib.request
 from dataclasses import dataclass
+from pathlib import Path
+from typing import Callable
 
 from . import __version__
 
@@ -16,6 +18,8 @@ class UpdateInfo:
     latest: str
     url: str
     available: bool
+    asset_url: str = ""
+    asset_name: str = ""
 
 
 def _version_tuple(value: str) -> tuple[int, ...]:
@@ -45,4 +49,38 @@ def check_for_update(timeout: float = 4.0) -> UpdateInfo | None:
     if not latest:
         return None
     url = str(payload.get("html_url") or RELEASES_PAGE)
-    return UpdateInfo(current=__version__, latest=latest, url=url, available=is_newer(latest, __version__))
+    asset_url, asset_name = _zip_asset(payload)
+    return UpdateInfo(
+        current=__version__,
+        latest=latest,
+        url=url,
+        available=is_newer(latest, __version__),
+        asset_url=asset_url,
+        asset_name=asset_name,
+    )
+
+
+def _zip_asset(payload: dict) -> tuple[str, str]:
+    for asset in payload.get("assets") or []:
+        name = str(asset.get("name") or "")
+        if name.lower().endswith(".zip"):
+            return str(asset.get("browser_download_url") or ""), name
+    return "", ""
+
+
+def download_release(url: str, dest: Path, on_progress: Callable[[int], None] | None = None, timeout: float = 30.0) -> Path:
+    """Telecharge l'asset de release vers dest (streaming + progression %)."""
+    request = urllib.request.Request(url, headers={"User-Agent": "PlantTrace"})
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    with urllib.request.urlopen(request, timeout=timeout) as response, dest.open("wb") as handle:
+        total = int(response.headers.get("Content-Length") or 0)
+        downloaded = 0
+        while True:
+            chunk = response.read(256 * 1024)
+            if not chunk:
+                break
+            handle.write(chunk)
+            downloaded += len(chunk)
+            if on_progress and total:
+                on_progress(int(downloaded * 100 / total))
+    return dest

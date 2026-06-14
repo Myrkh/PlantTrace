@@ -142,6 +142,25 @@ def test_render_page_preview_returns_png_and_highlights() -> None:
     assert empty_rects == []
 
 
+def test_self_update_helper_and_locate() -> None:
+    from planttrace import self_update
+
+    staging = run_root()
+    app_dir = staging / "PlantTrace"
+    app_dir.mkdir(parents=True)
+    (app_dir / "PlantTrace.exe").write_bytes(b"x")
+
+    assert self_update._locate_app_dir(staging) == app_dir
+    assert self_update.is_supported() is False
+
+    helper = self_update._write_helper(staging, 4242, app_dir, Path("C:/Apps/PlantTrace"), Path("C:/Apps/PlantTrace/PlantTrace.exe"))
+    text = helper.read_text(encoding="utf-8")
+    assert helper.name == "apply_update.bat"
+    assert "4242" in text
+    assert "robocopy" in text
+    assert "PlantTrace.exe" in text
+
+
 def test_changelog_is_well_formed() -> None:
     from planttrace.changelog import RELEASES
 

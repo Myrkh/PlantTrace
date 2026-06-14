@@ -54,6 +54,18 @@ class NavigationActionsMixin:
             QMessageBox.information(self, "PlantTrace", f"PlantTrace est a jour (V{info.current}).")
             return
         self._set_version_label(f"V{info.current}  -  MAJ V{info.latest}", up_to_date=False)
+        from planttrace.self_update import is_supported
+
+        if is_supported() and info.asset_url:
+            answer = QMessageBox.question(
+                self,
+                "Mise a jour disponible",
+                f"Nouvelle version disponible.\n\nInstallee : V{info.current}\nDerniere : V{info.latest}\n\n"
+                "Telecharger et installer maintenant ? L'application se fermera puis redemarrera.",
+            )
+            if answer == QMessageBox.StandardButton.Yes:
+                self.start_update(info)
+            return
         answer = QMessageBox.question(
             self,
             "Mise a jour disponible",

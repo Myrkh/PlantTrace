@@ -15,6 +15,7 @@ from PySide6.QtWidgets import (
     QLineEdit,
     QMainWindow,
     QMessageBox,
+    QProgressDialog,
     QPushButton,
     QScrollArea,
     QSizePolicy,
@@ -305,6 +306,48 @@ class MainWindow(PathActionsMixin, ExportActionsMixin, NavigationActionsMixin, Q
         self.worker = worker
         thread.start()
         return True
+
+    def start_update(self, info: object) -> None:
+        from planttrace.self_update import staging_root
+        from planttrace.ui.workers import DownloadWorker
+
+        dest = staging_root() / (info.asset_name or "PlantTrace-update.zip")
+        self._update_progress = QProgressDialog("Telechargement de la mise a jour...", None, 0, 100, self)
+        self._update_progress.setWindowTitle("Mise a jour PlantTrace")
+        self._update_progress.setWindowModality(Qt.WindowModality.WindowModal)
+        self._update_progress.setMinimumDuration(0)
+        self._update_progress.setValue(0)
+
+        thread = QThread(self)
+        worker = DownloadWorker(info.asset_url, dest)
+        worker.moveToThread(thread)
+        thread.started.connect(worker.run)
+        worker.progress.connect(self._update_progress.setValue)
+        worker.finished.connect(self._on_update_downloaded)
+        worker.failed.connect(self._on_update_failed)
+        worker.finished.connect(thread.quit)
+        worker.failed.connect(thread.quit)
+        thread.finished.connect(worker.deleteLater)
+        thread.finished.connect(thread.deleteLater)
+        self._update_thread = thread
+        self._update_worker = worker
+        thread.start()
+
+    def _on_update_downloaded(self, path: object) -> None:
+        from planttrace.self_update import apply_update
+
+        self._update_progress.close()
+        try:
+            apply_update(Path(str(path)))
+        except Exception as exc:
+            QMessageBox.warning(self, "PlantTrace", f"Mise a jour impossible: {exc}")
+            return
+        self.statusBar().showMessage("Mise a jour: fermeture et redemarrage...", 4000)
+        QApplication.quit()
+
+    def _on_update_failed(self, message: str) -> None:
+        self._update_progress.close()
+        QMessageBox.warning(self, "PlantTrace", f"Telechargement de la mise a jour impossible: {message}")
 
     def set_busy(self, busy: bool) -> None:
         for button in [self.index_button, self.embed_button, self.search_button, self.extract_button, self.search_export_button, self.extract_export_button]:
