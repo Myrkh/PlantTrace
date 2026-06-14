@@ -181,11 +181,9 @@ def show_environment_diagnostic(window: object) -> None:
 
 
 def show_about(window: object) -> None:
-    QMessageBox.information(
-        window,
-        "A propos de PlantTrace",
-        "PlantTrace\nOutil local de recherche et cross-reference documentaire industrielle.",
-    )
+    from planttrace.ui.about_dialog import AboutDialog
+
+    AboutDialog(window, window.show_changelog).exec()
 
 
 def open_command_palette(window: object) -> None:

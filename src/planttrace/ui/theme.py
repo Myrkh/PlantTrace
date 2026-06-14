@@ -246,6 +246,29 @@ QDialog#commandPalette {
 QDialog#changelogDialog {
     background: #f4f5f3;
 }
+QDialog#aboutDialog {
+    background: #f4f5f3;
+}
+QLabel#aboutName {
+    font-size: 20pt;
+    font-weight: 800;
+    color: #17201c;
+}
+QLabel#aboutVersion {
+    color: #2f6f62;
+    font-weight: 700;
+}
+QLabel#aboutTagline {
+    color: #26312b;
+    font-weight: 600;
+}
+QLabel#aboutBody {
+    color: #56635c;
+}
+QLabel#aboutCopyright {
+    color: #8a958d;
+    font-size: 9pt;
+}
 QLabel#changelogTitle {
     font-size: 16pt;
     font-weight: 800;

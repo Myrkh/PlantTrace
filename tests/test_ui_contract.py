@@ -126,6 +126,16 @@ def test_command_palette_corpus_search_groups_by_family() -> None:
     window.close()
 
 
+def test_about_dialog_constructs() -> None:
+    app = QApplication.instance() or QApplication([])
+    window = MainWindow()
+    from planttrace.ui.about_dialog import AboutDialog
+
+    dialog = AboutDialog(window, lambda: None)
+    assert dialog.windowTitle() == "A propos de PlantTrace"
+    window.close()
+
+
 def test_search_presenter_matches_table_contract() -> None:
     result = SearchResult("FV1100", "exact_normalized", "loop.pdf", 1, 100.0, "FV-1100", "excerpt", "ok", "ok")
 
