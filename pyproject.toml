@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "planttrace"
-version = "0.2.0"
+version = "0.3.0"
 description = "Local desktop cross-reference search for massive industrial PDF sets."
 requires-python = ">=3.11"
 dependencies = [

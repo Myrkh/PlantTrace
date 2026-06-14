@@ -20,6 +20,35 @@ class Release:
 # Newest first. Garder en tête à jour avec planttrace.__version__ à chaque release.
 RELEASES: tuple[Release, ...] = (
     Release(
+        version="0.3.0",
+        date="14 juin 2026",
+        tagline="La mise à jour en un clic, et des finitions.",
+        sections=(
+            ChangelogSection(
+                "Nouveautés",
+                (
+                    "Mise à jour en un clic : quand une nouvelle version est disponible, l'application "
+                    "la télécharge, l'installe à la place de l'ancienne et redémarre toute seule. "
+                    "Votre index (.planttrace) n'est jamais touché.",
+                    "Fenêtre « À propos » avec le logo, la version et un accès direct à ce journal.",
+                ),
+            ),
+            ChangelogSection(
+                "Améliorations",
+                (
+                    "Barre d'activité : le logo laisse place à un bouton « Rechercher » qui ouvre "
+                    "la palette de commande (Ctrl+Maj+P).",
+                ),
+            ),
+            ChangelogSection(
+                "Corrections",
+                (
+                    "Repli de la barre d'activité : petit artefact « > » supprimé à côté du chevron.",
+                ),
+            ),
+        ),
+    ),
+    Release(
         version="0.2.0",
         date="14 juin 2026",
         tagline="La preuve en un coup d'œil, et la recherche dans toute la base.",
