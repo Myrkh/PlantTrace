@@ -57,10 +57,12 @@ class RulesPanel(QWidget):
         self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self.table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)
         self.table.horizontalHeaderItem(0).setToolTip("Oui = cette regle est appliquee dans Extraction. Non = elle reste dans le registre mais n'est pas executee.")
+        self.table.setMinimumHeight(200)
         self.test_text.setPlaceholderText("Coller ici un extrait de PDF pour tester la regle du panneau gauche.")
         self.test_results.setHorizontalHeaderLabels(["Type", "Valeur", "Extrait"])
         self.test_results.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.test_results.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)
+        self.test_results.setMinimumHeight(150)
         self.stoplist.setPlaceholderText("Valeurs ignorees, une par ligne. Ex: RJ45, BP13, PLAN619")
 
         layout = QVBoxLayout(self)

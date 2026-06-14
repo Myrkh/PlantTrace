@@ -104,6 +104,16 @@ class ExportsPanel(QWidget):
         )
         self.add_action(
             layout,
+            "Master Register client",
+            "Fichiers Tags Template et Tags Documents Links Template remplis selon le modele client importe.",
+            "Ouvrir Master Register",
+            lambda: len(self.window.master_register_panel.current_result.tags) if self.window.master_register_panel.current_result else 0,
+            lambda: self.open_master_register(),
+            "Generer Master Register avant export.",
+            "tag(s) pret(s) dans le Master Register.",
+        )
+        self.add_action(
+            layout,
             "Familles documentaires",
             "Classement des PDF indexés par famille documentaire avec confiance et preuve.",
             "Exporter familles",
@@ -205,6 +215,7 @@ class ExportsPanel(QWidget):
             + (1 if self.window.reference_panel.profile else 0)
             + len(self.window.matrix_panel.rows)
             + (len(self.window.templates_panel.current_run.rows) if self.window.templates_panel.current_run else 0)
+            + (len(self.window.master_register_panel.current_result.tags) if self.window.master_register_panel.current_result else 0)
             + len(self.window.families_panel.families)
             + len(self.window.conflicts_panel.findings)
             + len(self.window.revisions_panel.changes)
@@ -214,3 +225,10 @@ class ExportsPanel(QWidget):
     def run_export(self, action: Callable[[], None]) -> None:
         action()
         self.refresh()
+
+    def open_master_register(self) -> None:
+        tabs = self.window.subactivity_tabs["Livrables"]
+        for index in range(tabs.count()):
+            if tabs.tabText(index) == "Master Register":
+                tabs.setCurrentIndex(index)
+                return

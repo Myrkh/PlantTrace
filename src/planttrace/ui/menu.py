@@ -28,6 +28,7 @@ def build_menu_bar(window: object) -> None:
     view_menu = add_menu(window, "Affichage")
     add_action(view_menu, "Replier la barre d'activite", lambda: set_activity_bar_collapsed(window, window.activity_buttons, window.activity_toggle_button, True))
     add_action(view_menu, "Deplier la barre d'activite", lambda: set_activity_bar_collapsed(window, window.activity_buttons, window.activity_toggle_button, False))
+    add_action(view_menu, "Masquer / afficher le panneau lateral", window.toggle_side_panel, "Ctrl+B")
     view_menu.addSeparator()
     add_action(view_menu, "Recherche", lambda: select_activity_by_name(window, "Recherche"))
     add_action(view_menu, "Corpus", lambda: select_activity_by_name(window, "Corpus"))

@@ -9,6 +9,7 @@ from PySide6.QtWidgets import (
     QPushButton,
     QScrollArea,
     QSizePolicy,
+    QSplitter,
     QTableWidget,
     QTabWidget,
     QVBoxLayout,
@@ -139,7 +140,7 @@ def build_stack(window: object) -> QWidget:
     window.stack.addWidget(tabbed_view(window, "Corpus", [("Couverture", coverage_view(window)), ("Familles", families_view(window))]))
     window.stack.addWidget(tabbed_view(window, "Inventaire", [("Regles", rules_view(window)), ("Extraction", extraction_view(window)), ("Templates", templates_view(window))]))
     window.stack.addWidget(tabbed_view(window, "Controle", [("Batch", batch_view(window)), ("Matrice", matrix_view(window)), ("Conflits", conflicts_view(window)), ("Revisions", revisions_view(window))]))
-    window.stack.addWidget(tabbed_view(window, "Livrables", [("Exports", exports_view(window))]))
+    window.stack.addWidget(tabbed_view(window, "Livrables", [("Exports", exports_view(window)), ("Master Register", master_register_view(window))]))
     return window.stack
 
 
@@ -227,7 +228,15 @@ def search_view(window: object) -> QWidget:
         stretch_columns=[1, 5],
     )
     window.search_table.cellDoubleClicked.connect(window.open_search_result)
-    layout.addWidget(window.search_table, 1)
+    window.search_table.currentCellChanged.connect(window.preview_search_result)
+    splitter = QSplitter(Qt.Orientation.Horizontal)
+    splitter.setObjectName("searchSplitter")
+    splitter.addWidget(window.search_table)
+    splitter.addWidget(window.preview_pane)
+    splitter.setStretchFactor(0, 3)
+    splitter.setStretchFactor(1, 2)
+    splitter.setSizes([780, 560])
+    layout.addWidget(splitter, 1)
     return page
 
 
@@ -298,6 +307,12 @@ def revisions_view(window: object) -> QWidget:
 def exports_view(window: object) -> QWidget:
     page, layout = page_shell("Exports")
     layout.addWidget(window.exports_panel, 1)
+    return page
+
+
+def master_register_view(window: object) -> QWidget:
+    page, layout = page_shell("Master Register")
+    layout.addWidget(window.master_register_panel, 1)
     return page
 
 

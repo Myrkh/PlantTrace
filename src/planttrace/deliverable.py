@@ -34,6 +34,7 @@ from .reference_exports import reference_profile_xlsx_bytes
 from .reference_profile import ReferenceProfile
 from .project_matrix import ProjectMatrixRow
 from .matrix_exports import PROJECT_MATRIX_HEADERS, project_matrix_to_row
+from .master_register import MasterRegisterResult
 from .revisions import RevisionChange
 from .templates import TemplateRun
 from .template_exports import TAG_REGISTER_HEADERS, tag_register_to_row
@@ -60,6 +61,7 @@ def build_deliverable_pack(
     reference_profile: ReferenceProfile | None = None,
     project_matrix: list[ProjectMatrixRow] | None = None,
     template_run: TemplateRun | None = None,
+    master_register: MasterRegisterResult | None = None,
 ) -> DeliverablePack:
     root = Path(project_root).resolve()
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -72,6 +74,7 @@ def build_deliverable_pack(
     profile = reference_profile
     matrix = project_matrix or []
     template = template_run
+    master = master_register
     included: list[str] = []
 
     manifest: dict[str, object] = {
@@ -89,6 +92,8 @@ def build_deliverable_pack(
             "reference_profile": 1 if profile else 0,
             "project_matrix_rows": len(matrix),
             "template_rows": len(template.rows) if template else 0,
+            "master_register_tags": len(master.tags) if master else 0,
+            "master_register_links": master.link_count if master else 0,
             "doc_families": len(families),
             "conflicts": len(conflicts),
             "revision_changes": len(revisions),
@@ -111,6 +116,10 @@ def build_deliverable_pack(
         add_xlsx(files, included, "exports/project-matrix.xlsx", [project_matrix_to_row(row) for row in matrix], PROJECT_MATRIX_HEADERS, "project_matrix")
     if template:
         add_xlsx(files, included, "exports/tag-register-template.xlsx", [tag_register_to_row(row) for row in template.rows], TAG_REGISTER_HEADERS, "tag_register")
+    if master:
+        add_file(files, included, "exports/master-register/Tags Template - PlantTrace.xlsx", master.tags_output)
+        add_file(files, included, "exports/master-register/Tags Documents Links Template - PlantTrace.xlsx", master.links_output)
+        add_file(files, included, "exports/master-register/PlantTrace Master Register Evidence.xlsx", master.evidence_output)
     if families:
         add_xlsx(files, included, "exports/document-families.xlsx", [doc_family_to_row(family) for family in families], DOC_FAMILY_HEADERS, "doc_families")
     if conflicts:
@@ -135,6 +144,13 @@ def build_deliverable_pack(
 def add_xlsx(files: list[tuple[str, bytes | str]], included: list[str], name: str, rows: list[dict[str, object]], headers: list[str], sheet_name: str) -> None:
     included.append(name)
     files.append((name, xlsx_bytes(rows, headers, sheet_name)))
+
+
+def add_file(files: list[tuple[str, bytes | str]], included: list[str], name: str, path: Path) -> None:
+    if not path.exists():
+        return
+    included.append(name)
+    files.append((name, path.read_bytes()))
 
 
 def xlsx_bytes(rows: list[dict[str, object]], headers: list[str], sheet_name: str) -> bytes:

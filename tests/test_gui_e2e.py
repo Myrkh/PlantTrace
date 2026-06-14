@@ -20,6 +20,13 @@ def test_gui_end_to_end_user_pipeline(monkeypatch) -> None:
     make_pdf(pdf_root / "loop.pdf", ["FV-1100 is connected to line 10-P-12345. JDY checked the Bouygues package."])
     make_pdf(pdf_root / "conflict.pdf", ["FV-1100 is connected to line 10-P-99999."])
     make_blank_pdf(pdf_root / "scan.pdf")
+    master_source = project_root / "master-source"
+    master_source.mkdir()
+    make_master_source(master_source / "HTI199-020-INS-0002-LST_04.xlsx")
+    tags_template = project_root / "Tags Template.xlsx"
+    links_template = project_root / "Tags Documents Links Template.xlsx"
+    make_master_template(tags_template, "Tags List", ["PlantNo", "Site", "TagNo", "Description", "TagType", "Sector", "System", "SubSystem", "Class", "CommunicationTag", "Deleted"])
+    make_master_template(links_template, "Tags Documents Links List", ["PlantNo", "TagNo", "Site", "DocumentID", "Deleted"])
     old_revision = project_root / "revision-old"
     new_revision = project_root / "revision-new"
     old_revision.mkdir()
@@ -172,6 +179,19 @@ def test_gui_end_to_end_user_pipeline(monkeypatch) -> None:
     assert (project_root / "template.xlsx").exists()
     grab(window, screenshots / "08-templates-after-run.png")
 
+    click_subactivity(window, "Livrables", "Master Register")
+    window.master_register_panel.source_edit.setText(str(master_source))
+    window.master_register_panel.tags_template_edit.setText(str(tags_template))
+    window.master_register_panel.links_template_edit.setText(str(links_template))
+    window.master_register_panel.output_edit.setText(str(project_root / "master-register"))
+    window.master_register_panel.plant_edit.setText("HTI199")
+    window.master_register_panel.site_edit.setText("GPS")
+    click_button(window.master_register_panel, "Generer Master Register")
+    assert table_contains(window.master_register_panel.table, "520FT1101")
+    assert (project_root / "master-register" / "Tags Template - PlantTrace.xlsx").exists()
+    assert (project_root / "master-register" / "Tags Documents Links Template - PlantTrace.xlsx").exists()
+    grab(window, screenshots / "09-master-register-after-run.png")
+
     click_subactivity(window, "Controle", "Matrice")
     for text in ["Construire matrice", "Exporter matrice"]:
         assert_visible_button(window.matrix_panel, text)
@@ -180,7 +200,7 @@ def test_gui_end_to_end_user_pipeline(monkeypatch) -> None:
     assert table_contains(window.matrix_panel.table, "high:LINE")
     click_button(window.matrix_panel, "Exporter matrice")
     assert (project_root / "matrix.xlsx").exists()
-    grab(window, screenshots / "09-matrix-after-run.png")
+    grab(window, screenshots / "10-matrix-after-run.png")
 
     click_subactivity(window, "Recherche", "Fiche")
     for text in ["Generer fiche", "Exporter fiche"]:
@@ -192,7 +212,7 @@ def test_gui_end_to_end_user_pipeline(monkeypatch) -> None:
     assert table_contains(window.reference_panel.alerts_table, "Conflits")
     click_button(window.reference_panel, "Exporter fiche")
     assert (project_root / "reference.xlsx").exists()
-    grab(window, screenshots / "10-reference-after-run.png")
+    grab(window, screenshots / "11-reference-after-run.png")
 
     click_subactivity(window, "Corpus", "Couverture")
     assert not window.side_panel.isHidden()
@@ -210,7 +230,7 @@ def test_gui_end_to_end_user_pipeline(monkeypatch) -> None:
     assert (project_root / "ocr-triage.xlsx").exists()
     window.coverage_panel.export_button.click()
     assert (project_root / "export-4-planttrace-coverage.xlsx").exists()
-    grab(window, screenshots / "11-coverage-after-run.png")
+    grab(window, screenshots / "12-coverage-after-run.png")
 
     click_subactivity(window, "Livrables", "Exports")
     assert window.side_panel.isHidden()
@@ -238,7 +258,7 @@ def test_gui_end_to_end_user_pipeline(monkeypatch) -> None:
     assert (project_root / "families.xlsx").exists()
     assert (project_root / "conflicts.xlsx").exists()
     assert (project_root / "revisions.xlsx").exists()
-    grab(window, screenshots / "12-exports-ready.png")
+    grab(window, screenshots / "13-exports-ready.png")
 
     click_subactivity(window, "Inventaire", "Regles")
     selected_count = rules.table.rowCount()
@@ -287,6 +307,27 @@ def make_blank_pdf(path: Path) -> None:
     document.new_page()
     document.save(path)
     document.close()
+
+
+def make_master_template(path: Path, sheet_name: str, headers: list[str]) -> None:
+    from openpyxl import Workbook
+
+    workbook = Workbook()
+    sheet = workbook.active
+    sheet.title = sheet_name
+    sheet.append(headers)
+    workbook.save(path)
+
+
+def make_master_source(path: Path) -> None:
+    from openpyxl import Workbook
+
+    workbook = Workbook()
+    sheet = workbook.active
+    sheet.title = "LISTE"
+    sheet.append(["TAG", "SERVICE", "FONCTION", "PID", "DATA SHEET", "SYSTEME_FUT"])
+    sheet.append(["520FT1101", "CHARGE PTT UCO", "DELTA P", "HTI199-020-PRO-3304-PID", "HTI199-020-INS-2235-SPE", "UCN16 HPM11/12"])
+    workbook.save(path)
 
 
 def next_export_path(project_root: Path, filename: str, index: dict[str, int]) -> Path:

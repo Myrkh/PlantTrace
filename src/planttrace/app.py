@@ -38,11 +38,14 @@ from .ui.batch_panel import BatchPanel
 from .ui.conflicts_panel import ConflictsPanel
 from .ui.coverage_panel import CoveragePanel
 from .ui.export_actions import ExportActionsMixin
+from .ui.icons import line_icon
 from .ui.exports_panel import ExportsPanel
 from .ui.families_panel import FamiliesPanel
+from .ui.master_register_panel import MasterRegisterPanel
 from .ui.matrix_panel import MatrixPanel
 from .ui.menu import build_menu_bar
 from .ui.presenters import extraction_row_values, result_row_values
+from .ui.preview_pane import PreviewPane
 from .ui.reference_panel import ReferencePanel
 from .ui.revisions_panel import RevisionsPanel
 from .ui.rules_panel import RulesPanel
@@ -87,6 +90,8 @@ class MainWindow(PathActionsMixin, ExportActionsMixin, NavigationActionsMixin, Q
         self.conflicts_panel = ConflictsPanel(self.project_root)
         self.revisions_panel = RevisionsPanel(self)
         self.coverage_panel = CoveragePanel(self.project_root)
+        self.master_register_panel = MasterRegisterPanel(self)
+        self.preview_pane = PreviewPane()
         self.exports_panel = ExportsPanel(self)
 
         self.index_button = QPushButton("Indexer")
@@ -120,11 +125,13 @@ class MainWindow(PathActionsMixin, ExportActionsMixin, NavigationActionsMixin, Q
             table.setWordWrap(False)
 
     def build_ui(self) -> None:
+        self.side_panel_collapsed = False
         shell = QHBoxLayout()
         shell.setContentsMargins(8, 8, 8, 8)
         shell.setSpacing(8)
         shell.addWidget(build_activity_bar(self))
         shell.addWidget(self.build_side_panel())
+        shell.addWidget(self.build_side_toggle())
         shell.addWidget(build_stack(self), 1)
         build_menu_bar(self)
 
@@ -135,11 +142,22 @@ class MainWindow(PathActionsMixin, ExportActionsMixin, NavigationActionsMixin, Q
         status_bar = QStatusBar()
         self.version_label = ClickableLabel(f"V{__version__}")
         self.version_label.setObjectName("versionLabel")
-        self.version_label.setToolTip("Cliquer pour verifier les mises a jour")
+        self.version_label.setToolTip("Cliquer pour voir les nouveautes (changelog)")
         self.version_label.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.version_label.clicked.connect(self.check_for_updates)
+        self.version_label.clicked.connect(self.show_changelog)
         status_bar.addPermanentWidget(self.version_label)
         self.setStatusBar(status_bar)
+
+    def build_side_toggle(self) -> QPushButton:
+        button = QPushButton()
+        button.setObjectName("sidePanelToggle")
+        button.setFixedWidth(16)
+        button.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Expanding)
+        button.setIcon(line_icon("expand", "#455149"))
+        button.setToolTip("Masquer le panneau lateral (Ctrl+B)")
+        button.clicked.connect(self.toggle_side_panel)
+        self.side_toggle_button = button
+        return button
 
     def build_side_panel(self) -> QWidget:
         panel = QFrame()
@@ -208,15 +226,26 @@ class MainWindow(PathActionsMixin, ExportActionsMixin, NavigationActionsMixin, Q
         if activity == "Livrables":
             self.exports_panel.refresh()
 
+    def toggle_side_panel(self) -> None:
+        self.side_panel_collapsed = not self.side_panel_collapsed
+        self.update_side_panel(ACTIVITIES[self.stack.currentIndex()])
+
     def update_side_panel(self, activity: str) -> None:
+        has_panel = True
         if activity in {"Recherche", "Corpus"}:
-            self.side_panel.show()
             self.side_stack.setCurrentIndex(0)
         elif activity == "Inventaire" and self.current_subactivity(activity) == "Regles":
-            self.side_panel.show()
             self.side_stack.setCurrentIndex(1)
         else:
-            self.side_panel.hide()
+            has_panel = False
+        self.side_toggle_button.setVisible(has_panel)
+        self.side_panel.setVisible(has_panel and not self.side_panel_collapsed)
+        if has_panel:
+            collapsed = self.side_panel_collapsed
+            self.side_toggle_button.setIcon(line_icon("collapse" if collapsed else "expand", "#455149"))
+            self.side_toggle_button.setToolTip(
+                "Afficher le panneau lateral (Ctrl+B)" if collapsed else "Masquer le panneau lateral (Ctrl+B)"
+            )
 
     def current_subactivity(self, activity: str) -> str:
         tabs = self.subactivity_tabs.get(activity)
@@ -292,7 +321,34 @@ class MainWindow(PathActionsMixin, ExportActionsMixin, NavigationActionsMixin, Q
         self.set_busy(False)
         self.results = results
         self.fill_table(self.search_table, [result_row_values(result) for result in results])
+        self._tag_search_rows()
+        if results:
+            self.search_table.selectRow(0)
+        else:
+            self.preview_pane.clear()
         self.statusBar().showMessage(f"{len(results)} resultat(s).", 8000)
+
+    def _tag_search_rows(self) -> None:
+        for index in range(self.search_table.rowCount()):
+            item = self.search_table.item(index, 0)
+            if item is not None:
+                item.setData(Qt.ItemDataRole.UserRole, index)
+
+    def result_for_row(self, row: int) -> SearchResult | None:
+        item = self.search_table.item(row, 0)
+        if item is None:
+            return None
+        index = item.data(Qt.ItemDataRole.UserRole)
+        if index is None or not (0 <= index < len(self.results)):
+            return None
+        return self.results[index]
+
+    def preview_search_result(self, row: int, _column: int = 0, _prev_row: int = -1, _prev_column: int = -1) -> None:
+        result = self.result_for_row(row)
+        if result is None:
+            self.preview_pane.clear()
+        else:
+            self.preview_pane.show_result(result)
 
     def on_extraction_finished(self, hits: list[ExtractionHit]) -> None:
         self.set_busy(False)
@@ -308,6 +364,7 @@ class MainWindow(PathActionsMixin, ExportActionsMixin, NavigationActionsMixin, Q
     def on_worker_failed(self, message: str) -> None:
         self.set_busy(False)
         self.fill_table(self.search_table, [["error", "", "", "", "", message, "", ""]])
+        self.preview_pane.clear()
         QMessageBox.critical(self, "PlantTrace", message)
         self.statusBar().showMessage("Erreur.", 8000)
 

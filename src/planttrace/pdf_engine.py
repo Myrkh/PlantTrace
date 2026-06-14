@@ -76,3 +76,19 @@ def render_page_png(path: Path, page_number: int, output: Path, zoom: float = 1.
         page = document[page_number - 1]
         pixmap = page.get_pixmap(matrix=fitz.Matrix(zoom, zoom), alpha=False)
         pixmap.save(output)
+
+
+def render_page_preview(
+    path: Path, page_number: int, terms: list[str], zoom: float = 2.0
+) -> tuple[bytes, list[tuple[float, float, float, float]]]:
+    """Render a page to PNG bytes and return highlight rects (pixel coords) for the given terms."""
+    with fitz.open(path) as document:
+        page = document[page_number - 1]
+        rects: list[tuple[float, float, float, float]] = []
+        for term in terms:
+            if not term:
+                continue
+            for rect in page.search_for(term):
+                rects.append((rect.x0 * zoom, rect.y0 * zoom, rect.x1 * zoom, rect.y1 * zoom))
+        pixmap = page.get_pixmap(matrix=fitz.Matrix(zoom, zoom), alpha=False)
+        return pixmap.tobytes("png"), rects

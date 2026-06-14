@@ -46,6 +46,7 @@ class ExportActionsMixin:
                 reference_profile=self.reference_panel.profile,
                 project_matrix=self.matrix_panel.rows,
                 template_run=self.templates_panel.current_run,
+                master_register=self.master_register_panel.current_result,
             )
         except Exception as exc:
             QMessageBox.warning(self, "PlantTrace", f"Pack livrable impossible: {exc}")

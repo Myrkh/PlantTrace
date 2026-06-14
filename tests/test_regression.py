@@ -13,6 +13,7 @@ from planttrace.models import ExtractionRule
 from planttrace.normalization import compact_identifier, compact_ocr_identifier, exact_variants
 from planttrace.rule_packs import export_rule_pack, import_rule_pack, load_preset_pack, project_rule_pack
 from planttrace.rules import load_rules, load_stoplist, save_rules, save_stoplist
+from planttrace.pdf_engine import render_page_preview
 from planttrace.search import search
 from planttrace.updates import is_newer
 from tests.support import make_pdf, run_root
@@ -125,6 +126,32 @@ def test_export_results_xlsx_has_expected_headers() -> None:
     workbook = load_workbook(output)
     sheet = workbook.active
     assert [cell.value for cell in sheet[1]][:4] == ["query", "match_type", "document_path", "page"]
+
+
+def test_render_page_preview_returns_png_and_highlights() -> None:
+    root = run_root()
+    pdf = root / "loop.pdf"
+    make_pdf(pdf, ["FV-1100 appears here.", "nothing relevant on this page"])
+
+    png, rects = render_page_preview(pdf, 1, ["FV-1100"])
+    assert png[:8] == b"\x89PNG\r\n\x1a\n"
+    assert len(rects) >= 1
+
+    empty_png, empty_rects = render_page_preview(pdf, 2, ["FV-1100"])
+    assert empty_png[:8] == b"\x89PNG\r\n\x1a\n"
+    assert empty_rects == []
+
+
+def test_changelog_is_well_formed() -> None:
+    from planttrace.changelog import RELEASES
+
+    assert RELEASES
+    for release in RELEASES:
+        assert release.version and release.date and release.tagline
+        assert release.sections
+        for section in release.sections:
+            assert section.title and section.items
+            assert all(isinstance(item, str) and item for item in section.items)
 
 
 def test_is_newer_compares_versions_numerically() -> None:

@@ -5,6 +5,7 @@ from pathlib import Path
 from PySide6.QtCore import QObject, Signal, Slot
 
 from planttrace.indexer import index_folder
+from planttrace.master_register import MasterRegisterConfig, build_master_register
 from planttrace.revisions import compare_revision_folders
 from planttrace.semantic import rebuild_embeddings
 
@@ -41,6 +42,23 @@ class EmbedWorker(QObject):
     def run(self) -> None:
         try:
             self.finished.emit(rebuild_embeddings(self.project_root))
+        except Exception as exc:
+            self.failed.emit(str(exc))
+
+
+class MasterRegisterWorker(QObject):
+    finished = Signal(object)
+    failed = Signal(str)
+
+    def __init__(self, config: MasterRegisterConfig, project_root: Path) -> None:
+        super().__init__()
+        self.config = config
+        self.project_root = project_root
+
+    @Slot()
+    def run(self) -> None:
+        try:
+            self.finished.emit(build_master_register(self.config, self.project_root))
         except Exception as exc:
             self.failed.emit(str(exc))
 

@@ -27,8 +27,9 @@ class PathActionsMixin:
 
 class NavigationActionsMixin:
     def open_search_result(self, row: int, _column: int) -> None:
-        if row < len(self.results) and self.results[row].document_path:
-            QDesktopServices.openUrl(QUrl.fromLocalFile(self.results[row].document_path))
+        result = self.result_for_row(row)
+        if result is not None and result.document_path:
+            QDesktopServices.openUrl(QUrl.fromLocalFile(result.document_path))
 
     def open_guide_html(self) -> None:
         guide = guide_html_path()
@@ -62,6 +63,16 @@ class NavigationActionsMixin:
             return
         label.setText(text)
         label.setStyleSheet("" if up_to_date else "color: #ffd479; font-weight: 700;")
+
+    def show_changelog(self) -> None:
+        from planttrace.changelog import RELEASES
+        from planttrace.ui.changelog_dialog import ChangelogDialog
+
+        dialog = ChangelogDialog(self, RELEASES, self.check_for_updates)
+        self.changelog_dialog = dialog
+        dialog.show()
+        dialog.raise_()
+        dialog.activateWindow()
 
 
 def guide_html_path() -> Path:

@@ -119,6 +119,16 @@ QFrame#sidePanel {
     border: 1px solid #d6dcd4;
     border-radius: 10px;
 }
+QPushButton#sidePanelToggle {
+    background: #e7ebe5;
+    color: #455149;
+    border: 1px solid #d6dcd4;
+    border-radius: 6px;
+    padding: 0;
+}
+QPushButton#sidePanelToggle:hover {
+    background: #d3dccf;
+}
 QScrollArea#sideScroller {
     background: transparent;
     border: 0;
@@ -126,6 +136,15 @@ QScrollArea#sideScroller {
 QScrollArea#contentScroller {
     background: #f4f5f3;
     border: 0;
+}
+QScrollArea#previewScroller {
+    background: #ffffff;
+    border: 1px solid #d6dcd4;
+    border-radius: 8px;
+}
+QLabel#previewHeader {
+    font-weight: 700;
+    color: #26312b;
 }
 QStackedWidget#sideStack, QWidget#sideContent {
     background: #ffffff;
@@ -215,6 +234,38 @@ QTableWidget {
 }
 QDialog#commandPalette {
     background: #f4f5f3;
+}
+QDialog#changelogDialog {
+    background: #f4f5f3;
+}
+QLabel#changelogTitle {
+    font-size: 16pt;
+    font-weight: 800;
+    color: #17201c;
+}
+QScrollArea#changelogScroller {
+    background: #ffffff;
+    border: 1px solid #d6dcd4;
+    border-radius: 10px;
+}
+QLabel#releaseHeading {
+    font-size: 13pt;
+    font-weight: 800;
+    color: #1f2522;
+}
+QLabel#releaseTagline {
+    color: #56635c;
+    font-style: italic;
+}
+QLabel#sectionTitle {
+    font-size: 11pt;
+    font-weight: 800;
+    color: #2f6f62;
+    padding-top: 10px;
+}
+QLabel#changeItem {
+    color: #26312b;
+    line-height: 140%;
 }
 QLineEdit#paletteSearch {
     min-height: 38px;

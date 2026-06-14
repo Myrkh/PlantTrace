@@ -9,13 +9,14 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 from PySide6.QtWidgets import QApplication, QPushButton, QScrollArea
 
 from planttrace.app import MainWindow
+from planttrace.cli import main as cli_main
 from planttrace.models import ExtractionHit, SearchResult
 from planttrace.ui.command_palette import CommandPalette, build_commands
 from planttrace.ui.presenters import extraction_row_values, result_row_values
 from planttrace.ui.rules_panel import RulesPanel
 from planttrace.ui.views import ACTIVITIES
 from planttrace.ui.window_actions import app_icon_path, guide_html_path
-from tests.support import run_root
+from tests.support import make_pdf, run_root
 
 
 def test_activity_contract_is_stable() -> None:
@@ -53,6 +54,7 @@ def test_main_window_constructs_without_event_loop() -> None:
     assert window.stack.count() == 5
     assert window.subactivity_tabs["Recherche"].count() == 2
     assert window.subactivity_tabs["Inventaire"].count() == 3
+    assert window.subactivity_tabs["Livrables"].count() == 2
     assert isinstance(window.subactivity_tabs["Livrables"].widget(0), QScrollArea)
     assert [action.text() for action in window.menuBar().actions()] == ["Fichier", "Modifier", "Affichage", "Fenetre", "Outils", "Aide"]
     tool_actions = [action for action in window.menuBar().actions() if action.text() == "Outils"][0].menu().actions()
@@ -60,6 +62,7 @@ def test_main_window_constructs_without_event_loop() -> None:
     assert palette_action.shortcut().toString() == "Ctrl+Shift+P"
     assert window.rules_panel.sidebar is not None
     assert window.exports_panel is not None
+    assert window.master_register_panel is not None
     assert not window.side_panel.isHidden()
     assert window.side_stack.currentWidget().widget().width() <= window.side_stack.width()
     window.on_activity_selected(1)
@@ -98,6 +101,27 @@ def test_command_palette_filters_and_runs_navigation() -> None:
 
     assert window.stack.currentIndex() == ACTIVITIES.index("Controle")
     assert window.subactivity_tabs["Controle"].tabText(window.subactivity_tabs["Controle"].currentIndex()) == "Conflits"
+
+    window.close()
+
+
+def test_command_palette_corpus_search_groups_by_family() -> None:
+    app = QApplication.instance() or QApplication([])
+    root = run_root()
+    pdf_dir = root / "pdfs"
+    pdf_dir.mkdir()
+    make_pdf(pdf_dir / "loop_diagram.pdf", ["Loop diagram FV-1100 process control"])
+    cli_main(["index", "--project", str(root), "--pdf-root", str(pdf_dir), "--force"])
+
+    window = MainWindow()
+    window.project_edit.setText(str(root.resolve()))
+    palette = CommandPalette(window, build_commands(window))
+    palette.search.setText("FV1100")
+    palette.run_corpus_search()
+
+    texts = [palette.list.item(index).text() for index in range(palette.list.count())]
+    assert any("FV-1100" in text for text in texts)
+    assert "Loop diagram" in texts
 
     window.close()
 

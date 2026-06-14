@@ -10,6 +10,7 @@ from planttrace.conflicts import detect_conflicts
 from planttrace.deliverable import build_deliverable_pack
 from planttrace.doc_families import DocumentFamily, classify_documents
 from planttrace.indexer import index_folder
+from planttrace.master_register import MasterRegisterConfig, build_master_register
 from planttrace.coverage import coverage_documents, coverage_tasks, coverage_triage, coverage_verdict
 from planttrace.extractor import extract_references
 from planttrace.export import export_conflicts, export_coverage, export_coverage_tasks, export_doc_families, export_extraction, export_revisions
@@ -24,6 +25,28 @@ from planttrace.template_exports import export_template_run
 from planttrace.templates import TAG_REGISTER_TEMPLATE, TemplateRun, run_template
 from planttrace.models import ProjectPaths
 from tests.support import make_pdf, run_root
+
+
+def make_template(path, sheet_name: str, headers: list[str]) -> None:
+    from openpyxl import Workbook
+
+    workbook = Workbook()
+    sheet = workbook.active
+    sheet.title = sheet_name
+    sheet.append(headers)
+    workbook.save(path)
+
+
+def make_source_list(path) -> None:
+    from openpyxl import Workbook
+
+    workbook = Workbook()
+    sheet = workbook.active
+    sheet.title = "LISTE"
+    sheet.append(["TAG", "SERVICE", "FONCTION", "PID", "DATA SHEET", "SYSTEME_ACT", "SYSTEME_FUT", "JB_TAG"])
+    sheet.append(["520FT1101", "CHARGE PTT UCO", "DELTA P", "HTI199-020-PRO-3304-PID", "HTI199-020-INS-2235-SPE", "", "UCN16 HPM11/12", "520BJM1"])
+    sheet.append(["340G1012_E", "340G1012 ENCLENCHEMENT", "CDE TOR", "HTI199-020-PRO-3308-PID", "", "410AUT30", "410AUT38", "P2-ST10-100"])
+    workbook.save(path)
 
 
 def test_exact_normalized_search_finds_tag_variants() -> None:
@@ -227,6 +250,67 @@ def test_tag_register_template_fills_engineering_columns_with_evidence() -> None
     assert "10-P-99999" in row.lines
     assert "HTI199" in row.documents
     assert "high:LINE" in row.conflicts
+
+
+def test_master_register_imports_client_templates_and_exports_mapped_registers() -> None:
+    tmp_path = run_root()
+    source_root = tmp_path / "source"
+    source_root.mkdir()
+    pdf_root = source_root / "pdfs"
+    pdf_root.mkdir()
+    make_source_list(source_root / "HTI199-020-INS-0002-LST_04.xlsx")
+    make_pdf(pdf_root / "HTI199-020-INS-2810-WIR_01.pdf", ["Wiring diagram references 520FT1101 and terminal 520BJM1."])
+    index_folder(tmp_path, pdf_root)
+
+    tags_template = tmp_path / "Tags Template.xlsx"
+    links_template = tmp_path / "Tags Documents Links Template.xlsx"
+    make_template(tags_template, "Tags List", ["PlantNo", "Site", "TagNo", "Description", "TagType", "Sector", "System", "SubSystem", "Class", "CommunicationTag", "Deleted"])
+    make_template(links_template, "Tags Documents Links List", ["PlantNo", "TagNo", "Site", "DocumentID", "Deleted"])
+
+    result = build_master_register(
+        MasterRegisterConfig(
+            source_root=source_root,
+            tags_template=tags_template,
+            links_template=links_template,
+            output_dir=tmp_path / "out",
+            plant_no="HTI199",
+            site="GPS",
+        ),
+        project_root=tmp_path,
+    )
+
+    from openpyxl import load_workbook
+
+    tags_wb = load_workbook(result.tags_output, data_only=True)
+    links_wb = load_workbook(result.links_output, data_only=True)
+    tags_sheet = tags_wb["Tags List"]
+    links_sheet = links_wb["Tags Documents Links List"]
+
+    assert result.tags_output.exists()
+    assert result.links_output.exists()
+    assert result.evidence_output.exists()
+    assert result.link_count >= 5
+    tag_rows = {row[2]: row for row in tags_sheet.iter_rows(min_row=2, values_only=True) if row[2]}
+    assert tag_rows["520FT1101"][0] == "HTI199"
+    assert tag_rows["520FT1101"][1] == "GPS"
+    assert tag_rows["520FT1101"][3] == "CHARGE PTT UCO"
+    assert tag_rows["520FT1101"][4] == "DELTA P"
+    assert tag_rows["520FT1101"][6] == "UCN16 HPM11/12"
+    links = {(row[1], row[3]) for row in links_sheet.iter_rows(min_row=2, values_only=True) if row[1]}
+    assert ("520FT1101", "HTI199-020-PRO-3304-PID") in links
+    assert ("520FT1101", "HTI199-020-INS-2235-SPE") in links
+    assert ("520FT1101", "HTI199-020-INS-2810-WIR") in links
+
+    pack_output = tmp_path / "pack.zip"
+    pack = build_deliverable_pack(tmp_path, pack_output, [], [], [], master_register=result)
+    with ZipFile(pack.output) as archive:
+        names = set(archive.namelist())
+        manifest = json.loads(archive.read("manifest.json").decode("utf-8"))
+    assert "exports/master-register/Tags Template - PlantTrace.xlsx" in names
+    assert "exports/master-register/Tags Documents Links Template - PlantTrace.xlsx" in names
+    assert "exports/master-register/PlantTrace Master Register Evidence.xlsx" in names
+    assert manifest["counts"]["master_register_tags"] == len(result.tags)
+    assert manifest["counts"]["master_register_links"] == result.link_count
 
 
 def test_revision_compare_finds_added_removed_and_modified_references() -> None:
