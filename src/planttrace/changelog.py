@@ -42,6 +42,9 @@ RELEASES: tuple[Release, ...] = (
             ChangelogSection(
                 "Améliorations",
                 (
+                    "Suivi de l'indexation en direct : une barre de progression et un compteur "
+                    "« N / M » avec le fichier en cours remplacent le message figé — sur un gros "
+                    "projet (des milliers de PDF), vous voyez enfin où en est le travail.",
                     "Guide d'utilisation refondu : nouvelle version de référence, avec une section "
                     "« Vitesse & preuve » pour aller vite sans jamais lâcher la preuve.",
                     "La palette de commande (Ctrl+Maj+P) a sa propre icône dans la barre d'activité, "
