@@ -43,6 +43,12 @@ class ReferencePanel(QWidget):
         layout.setSpacing(10)
         layout.addWidget(self.status_label)
         layout.addLayout(actions)
+        layout.addWidget(QLabel("Complétude documentaire"))
+        self.completeness_widget = QWidget()
+        self.completeness_layout = QHBoxLayout(self.completeness_widget)
+        self.completeness_layout.setContentsMargins(0, 0, 0, 0)
+        self.completeness_layout.setSpacing(6)
+        layout.addWidget(self.completeness_widget)
         layout.addWidget(QLabel("Occurrences"))
         layout.addWidget(self.occurrences_table, 2)
         layout.addWidget(QLabel("Associations detectees"))
@@ -94,9 +100,24 @@ class ReferencePanel(QWidget):
         output, _ = QFileDialog.getSaveFileName(self, "Export fiche reference", str(self.window.project_root() / "planttrace-fiche-reference.xlsx"), "Excel (*.xlsx)")
         return Path(output) if output else None
 
+    def fill_completeness(self) -> None:
+        while self.completeness_layout.count():
+            item = self.completeness_layout.takeAt(0)
+            widget = item.widget()
+            if widget is not None:
+                widget.deleteLater()
+        if self.profile is None:
+            return
+        for name, present in self.profile.completeness:
+            chip = QLabel(name)
+            chip.setObjectName("famChipOk" if present else "famChipMissing")
+            self.completeness_layout.addWidget(chip)
+        self.completeness_layout.addStretch()
+
     def fill_tables(self) -> None:
         if self.profile is None:
             return
+        self.fill_completeness()
         fill_table(self.occurrences_table, [[item.family, item.filename, str(item.page), item.match_type, item.found_as, item.excerpt, item.page_status] for item in self.profile.occurrences])
         fill_table(self.associations_table, [[item.kind, item.value, str(item.evidence_count), item.documents, item.pages, item.excerpt] for item in self.profile.associations])
         fill_table(self.alerts_table, [[item.source, item.severity, item.field, item.values, item.documents, item.pages, item.summary] for item in self.profile.alerts])

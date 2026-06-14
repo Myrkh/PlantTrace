@@ -49,4 +49,9 @@ def reference_profile_workbook(profile: ReferenceProfile) -> Workbook:
     alerts.append(["source", "severity", "field", "values", "documents", "pages", "summary"])
     for item in profile.alerts:
         alerts.append([item.source, item.severity, item.field, item.values, item.documents, item.pages, item.summary])
+
+    completeness = workbook.create_sheet("completeness")
+    completeness.append(["family", "present"])
+    for name, present in profile.completeness:
+        completeness.append([name, "present" if present else "manquant"])
     return workbook

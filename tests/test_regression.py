@@ -142,6 +142,21 @@ def test_render_page_preview_returns_png_and_highlights() -> None:
     assert empty_rects == []
 
 
+def test_reference_completeness_flags_present_and_missing() -> None:
+    from planttrace.reference_profile import ReferenceOccurrence, compute_completeness
+
+    occurrences = [
+        ReferenceOccurrence(
+            family="Loop diagram", document_path="a.pdf", filename="a.pdf", page=1,
+            match_type="exact_normalized", found_as="FV-1100", excerpt="", page_status="ok", document_status="ok",
+        )
+    ]
+    result = dict(compute_completeness(occurrences))
+    assert result["Loop diagram"] is True
+    assert result["Datasheet"] is False
+    assert result["PID / PFD"] is False
+
+
 def test_bug_report_builds_diagnostic_and_subject() -> None:
     from planttrace import __version__
     from planttrace.bug_report import diagnostic_text, report_body, subject

@@ -214,6 +214,22 @@ QLabel#mutedLabel {
     color: #56635c;
     font-weight: 600;
 }
+QLabel#famChipOk {
+    background: #e2f0e9;
+    color: #1f6b56;
+    border: 1px solid #b9ddcf;
+    border-radius: 11px;
+    padding: 3px 11px;
+    font-weight: 700;
+}
+QLabel#famChipMissing {
+    background: #f4e2de;
+    color: #9a3b29;
+    border: 1px solid #e0bcb2;
+    border-radius: 11px;
+    padding: 3px 11px;
+    font-weight: 700;
+}
 QFrame#exportRow {
     background: #ffffff;
     border: 1px solid #d7ded4;

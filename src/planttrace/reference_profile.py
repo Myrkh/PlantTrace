@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 from .conflicts import ConflictFinding, detect_conflicts
-from .doc_families import classify_documents
+from .doc_families import FAMILY_RULES, classify_documents
 from .extractor import extract_references
 from .models import ExtractionHit, SearchResult
 from .normalization import compact_identifier
@@ -57,6 +57,17 @@ class ReferenceProfile:
     occurrences: list[ReferenceOccurrence]
     associations: list[ReferenceAssociation]
     alerts: list[ReferenceAlert]
+    completeness: list[tuple[str, bool]] = field(default_factory=list)
+
+
+# Familles documentaires attendues pour qu'un instrument soit considere complet.
+EXPECTED_FAMILIES = ("PID_PFD", "LOOP", "DATASHEET", "IO_PLC")
+
+
+def compute_completeness(occurrences: list[ReferenceOccurrence]) -> list[tuple[str, bool]]:
+    present = {occurrence.family for occurrence in occurrences}
+    label_by_code = {rule.family: rule.label for rule in FAMILY_RULES}
+    return [(label_by_code[code], label_by_code[code] in present) for code in EXPECTED_FAMILIES]
 
 
 def build_reference_profile(
@@ -91,6 +102,7 @@ def build_reference_profile(
         occurrences=occurrences,
         associations=associations,
         alerts=alerts,
+        completeness=compute_completeness(occurrences),
     )
 
 
