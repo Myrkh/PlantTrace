@@ -53,6 +53,7 @@ def build_menu_bar(window: object) -> None:
     help_menu = add_menu(window, "Aide")
     add_action(help_menu, "Ouvrir le guide HTML local", window.open_guide_html, "F1")
     add_action(help_menu, "Verifier les mises a jour", window.check_for_updates)
+    add_action(help_menu, "Signaler un bug", window.report_bug)
     add_action(help_menu, "A propos de PlantTrace", lambda: show_about(window))
     window.planttrace_menus = [file_menu, edit_menu, view_menu, window_menu, tools_menu, help_menu]
 
@@ -183,7 +184,7 @@ def show_environment_diagnostic(window: object) -> None:
 def show_about(window: object) -> None:
     from planttrace.ui.about_dialog import AboutDialog
 
-    AboutDialog(window, window.show_changelog).exec()
+    AboutDialog(window, window.show_changelog, window.report_bug).exec()
 
 
 def open_command_palette(window: object) -> None:

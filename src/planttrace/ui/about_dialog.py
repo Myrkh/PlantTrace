@@ -10,7 +10,7 @@ from planttrace.ui.icons import logo_pixmap
 
 
 class AboutDialog(QDialog):
-    def __init__(self, parent: object, on_changelog: Callable[[], None]) -> None:
+    def __init__(self, parent: object, on_changelog: Callable[[], None], on_report: Callable[[], None]) -> None:
         super().__init__(parent)
         self.setObjectName("aboutDialog")
         self.setWindowTitle("A propos de PlantTrace")
@@ -42,17 +42,21 @@ class AboutDialog(QDialog):
         body.setAlignment(Qt.AlignmentFlag.AlignCenter)
         body.setWordWrap(True)
 
-        copyright_label = QLabel("© 2026 — Outil interne, bureau d'études")
+        copyright_label = QLabel("Développé par Yoann Dumont · © 2026")
         copyright_label.setObjectName("aboutCopyright")
         copyright_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
+        report_button = QPushButton("Signaler un bug")
+        report_button.setObjectName("secondaryButton")
+        report_button.clicked.connect(lambda: self._run(on_report))
         changelog_button = QPushButton("Journal des nouveautés")
         changelog_button.setObjectName("secondaryButton")
-        changelog_button.clicked.connect(lambda: self._open_changelog(on_changelog))
+        changelog_button.clicked.connect(lambda: self._run(on_changelog))
         close_button = QPushButton("Fermer")
         close_button.clicked.connect(self.accept)
         footer = QHBoxLayout()
         footer.addStretch()
+        footer.addWidget(report_button)
         footer.addWidget(changelog_button)
         footer.addWidget(close_button)
 
@@ -70,6 +74,6 @@ class AboutDialog(QDialog):
         layout.addSpacing(8)
         layout.addLayout(footer)
 
-    def _open_changelog(self, on_changelog: Callable[[], None]) -> None:
+    def _run(self, action: Callable[[], None]) -> None:
         self.accept()
-        on_changelog()
+        action()

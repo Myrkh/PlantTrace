@@ -336,4 +336,14 @@ QLabel#versionLabel {
     font-weight: 600;
     padding-right: 8px;
 }
+QPushButton#footerBugButton {
+    background: transparent;
+    border: 0;
+    border-radius: 4px;
+    min-height: 0;
+    padding: 2px 6px;
+}
+QPushButton#footerBugButton:hover {
+    background: #2f3a34;
+}
 """

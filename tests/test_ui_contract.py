@@ -131,7 +131,7 @@ def test_about_dialog_constructs() -> None:
     window = MainWindow()
     from planttrace.ui.about_dialog import AboutDialog
 
-    dialog = AboutDialog(window, lambda: None)
+    dialog = AboutDialog(window, lambda: None, lambda: None)
     assert dialog.windowTitle() == "A propos de PlantTrace"
     window.close()
 

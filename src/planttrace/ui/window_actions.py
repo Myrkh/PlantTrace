@@ -40,6 +40,21 @@ class NavigationActionsMixin:
 
         open_command_palette(self)
 
+    def report_bug(self) -> None:
+        from PySide6.QtCore import QUrlQuery
+
+        from planttrace.bug_report import REPORT_EMAIL, diagnostic_text, report_body, subject
+        from planttrace.pdf_engine import ocr_available
+        from planttrace.semantic import semantic_status
+
+        diagnostic = diagnostic_text(str(self.project_root()), ocr_available(), semantic_status(self.project_root()).message)
+        query = QUrlQuery()
+        query.addQueryItem("subject", subject())
+        query.addQueryItem("body", report_body(diagnostic))
+        url = QUrl(f"mailto:{REPORT_EMAIL}")
+        url.setQuery(query)
+        QDesktopServices.openUrl(url)
+
     def check_for_updates(self) -> None:
         QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
         try:

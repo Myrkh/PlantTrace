@@ -142,6 +142,20 @@ def test_render_page_preview_returns_png_and_highlights() -> None:
     assert empty_rects == []
 
 
+def test_bug_report_builds_diagnostic_and_subject() -> None:
+    from planttrace import __version__
+    from planttrace.bug_report import diagnostic_text, report_body, subject
+
+    assert __version__ in subject()
+    diagnostic = diagnostic_text("C:/Projet", ocr_detected=False, semantic="offline")
+    assert "Version : " in diagnostic
+    assert "OCR Tesseract : non detecte" in diagnostic
+    assert "C:/Projet" in diagnostic
+    body = report_body(diagnostic)
+    assert body.endswith(diagnostic)
+    assert "Decrivez le probleme" in body
+
+
 def test_self_update_helper_and_locate() -> None:
     from planttrace import self_update
 

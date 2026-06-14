@@ -43,7 +43,7 @@ def build_activity_bar(window: object) -> QWidget:
 
     palette_button = QPushButton("Rechercher")
     palette_button.setObjectName("paletteLauncher")
-    palette_button.setIcon(line_icon("search"))
+    palette_button.setIcon(line_icon("terminal"))
     palette_button.setIconSize(QSize(18, 18))
     palette_button.setToolTip("Palette de commande (Ctrl+Maj+P)")
     palette_button.clicked.connect(window.open_command_palette)

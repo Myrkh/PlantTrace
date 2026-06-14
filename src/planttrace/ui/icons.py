@@ -110,6 +110,19 @@ def draw_icon(painter: QPainter, name: str) -> None:
         painter.drawLine(QPointF(8, 8), QPointF(16, 8))
         painter.drawLine(QPointF(8, 12), QPointF(16, 12))
         painter.drawLine(QPointF(8, 16), QPointF(12, 16))
+    elif name == "terminal":
+        painter.drawRoundedRect(QRectF(4, 5, 16, 14), 2, 2)
+        painter.drawLine(QPointF(7, 10), QPointF(10, 12))
+        painter.drawLine(QPointF(10, 12), QPointF(7, 14))
+        painter.drawLine(QPointF(12, 15), QPointF(16, 15))
+    elif name == "bug":
+        painter.drawEllipse(QRectF(8, 7, 8, 11))
+        painter.drawArc(QRectF(9, 4, 6, 6), 0, 180 * 16)
+        painter.drawLine(QPointF(10, 5), QPointF(8, 3))
+        painter.drawLine(QPointF(14, 5), QPointF(16, 3))
+        for y in (9, 12, 15):
+            painter.drawLine(QPointF(8, y), QPointF(5, y - 1))
+            painter.drawLine(QPointF(16, y), QPointF(19, y - 1))
     else:
         painter.drawEllipse(QRectF(5, 5, 14, 14))
 
