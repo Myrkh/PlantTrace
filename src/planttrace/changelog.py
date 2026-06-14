@@ -20,6 +20,37 @@ class Release:
 # Newest first. Garder en tête à jour avec planttrace.__version__ à chaque release.
 RELEASES: tuple[Release, ...] = (
     Release(
+        version="0.4.0",
+        date="14 juin 2026",
+        tagline="La preuve jusque dans le livrable, et un retour direct en un clic.",
+        sections=(
+            ChangelogSection(
+                "Nouveautés",
+                (
+                    "Pièces de preuve visuelles dans le pack livrable : chaque résultat exporté "
+                    "est accompagné d'une image de la zone du PDF où votre référence apparaît, "
+                    "surlignée. L'auditeur voit la preuve sans ouvrir un seul plan.",
+                    "Complétude documentaire sur la fiche d'une référence : pour chaque instrument, "
+                    "des puces indiquent les familles de documents présentes (P&ID, Loop, Datasheet, "
+                    "IO/Automate) et celles qui manquent — vous voyez d'un coup d'œil ce qu'il reste "
+                    "à fournir.",
+                    "Signaler un bug en un clic : depuis « À propos », un bouton ouvre votre "
+                    "messagerie avec un e-mail pré-rempli — votre description et un diagnostic "
+                    "technique (version, OS, OCR, sémantique). Rien n'est envoyé sans votre validation.",
+                ),
+            ),
+            ChangelogSection(
+                "Améliorations",
+                (
+                    "Guide d'utilisation refondu : nouvelle version de référence, avec une section "
+                    "« Vitesse & preuve » pour aller vite sans jamais lâcher la preuve.",
+                    "La palette de commande (Ctrl+Maj+P) a sa propre icône dans la barre d'activité, "
+                    "plus lisible qu'avant.",
+                ),
+            ),
+        ),
+    ),
+    Release(
         version="0.3.0",
         date="14 juin 2026",
         tagline="La mise à jour en un clic, et des finitions.",
