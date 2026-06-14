@@ -64,6 +64,21 @@ def test_exact_normalized_search_finds_tag_variants() -> None:
     assert "FV-1100" in results[0].excerpt
 
 
+def test_index_reports_progress_per_file() -> None:
+    tmp_path = run_root()
+    pdf_root = tmp_path / "pdfs"
+    pdf_root.mkdir()
+    for name in ("a.pdf", "b.pdf", "c.pdf"):
+        make_pdf(pdf_root / name, [f"Document {name} mentions FV-1100."])
+
+    events: list[tuple[int, int, str]] = []
+    index_folder(tmp_path, pdf_root, progress_callback=lambda done, total, name: events.append((done, total, name)))
+
+    assert all(total == 3 for _done, total, _name in events)
+    assert [done for done, _total, _name in events] == [0, 1, 2, 3]
+    assert events[-1] == (3, 3, "")
+
+
 def test_text_search_and_not_found_are_evidence_shaped() -> None:
     tmp_path = run_root()
     pdf_root = tmp_path / "pdfs"

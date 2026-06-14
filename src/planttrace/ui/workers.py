@@ -14,6 +14,7 @@ from planttrace.updates import download_release
 class IndexWorker(QObject):
     finished = Signal(object)
     failed = Signal(str)
+    progress = Signal(int, int, str)
 
     def __init__(self, project_root: Path, pdf_root: Path, force: bool, enable_ocr: bool, ocr_lang: str) -> None:
         super().__init__()
@@ -26,7 +27,9 @@ class IndexWorker(QObject):
     @Slot()
     def run(self) -> None:
         try:
-            self.finished.emit(index_folder(self.project_root, self.pdf_root, self.force, self.enable_ocr, self.ocr_lang))
+            self.finished.emit(
+                index_folder(self.project_root, self.pdf_root, self.force, self.enable_ocr, self.ocr_lang, self.progress.emit)
+            )
         except Exception as exc:
             self.failed.emit(str(exc))
 

@@ -346,6 +346,17 @@ QStatusBar {
     background: #202723;
     color: #f5f7f3;
 }
+QProgressBar#indexProgress {
+    background: #2f3a34;
+    border: 0;
+    border-radius: 4px;
+    max-height: 8px;
+    margin-right: 8px;
+}
+QProgressBar#indexProgress::chunk {
+    background: #63b89f;
+    border-radius: 4px;
+}
 QLabel#versionLabel {
     color: #9fb0a6;
     font-size: 9pt;

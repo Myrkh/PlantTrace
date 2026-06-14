@@ -15,6 +15,7 @@ from PySide6.QtWidgets import (
     QLineEdit,
     QMainWindow,
     QMessageBox,
+    QProgressBar,
     QProgressDialog,
     QPushButton,
     QScrollArea,
@@ -147,11 +148,17 @@ class MainWindow(PathActionsMixin, ExportActionsMixin, NavigationActionsMixin, Q
         bug_button.setToolTip("Signaler un bug")
         bug_button.setCursor(Qt.CursorShape.PointingHandCursor)
         bug_button.clicked.connect(self.report_bug)
+        self.index_progress = QProgressBar()
+        self.index_progress.setObjectName("indexProgress")
+        self.index_progress.setFixedWidth(160)
+        self.index_progress.setTextVisible(False)
+        self.index_progress.hide()
         self.version_label = ClickableLabel(f"V{__version__}")
         self.version_label.setObjectName("versionLabel")
         self.version_label.setToolTip("Cliquer pour voir les nouveautes (changelog)")
         self.version_label.setCursor(Qt.CursorShape.PointingHandCursor)
         self.version_label.clicked.connect(self.show_changelog)
+        status_bar.addPermanentWidget(self.index_progress)
         status_bar.addPermanentWidget(bug_button)
         status_bar.addPermanentWidget(self.version_label)
         self.setStatusBar(status_bar)
@@ -267,9 +274,12 @@ class MainWindow(PathActionsMixin, ExportActionsMixin, NavigationActionsMixin, Q
             QMessageBox.warning(self, "PlantTrace", "Dossier PDF introuvable.")
             return
         worker = IndexWorker(self.project_root(), pdf_root, self.force_check.isChecked(), self.ocr_check.isChecked(), self.ocr_lang_edit.text().strip() or "eng")
+        worker.progress.connect(self.on_index_progress)
         if self.run_worker(worker, self.on_index_finished):
             self.set_busy(True)
-            self.statusBar().showMessage("Indexation en cours...")
+            self.index_progress.setRange(0, 0)
+            self.index_progress.show()
+            self.statusBar().showMessage("Indexation : analyse du dossier...")
 
     def start_search(self) -> None:
         query = self.query_edit.text().strip()
@@ -362,8 +372,18 @@ class MainWindow(PathActionsMixin, ExportActionsMixin, NavigationActionsMixin, Q
         if hasattr(self, "revisions_panel"):
             self.revisions_panel.set_controls_enabled(not busy)
 
+    def on_index_progress(self, done: int, total: int, name: str) -> None:
+        if self.index_progress.maximum() != total:
+            self.index_progress.setRange(0, total)
+        self.index_progress.setValue(done)
+        message = f"Indexation {done} / {total}"
+        if name:
+            message += f" — {name}"
+        self.statusBar().showMessage(message)
+
     def on_index_finished(self, report: IndexReport) -> None:
         self.set_busy(False)
+        self.index_progress.hide()
         self.refresh_coverage()
         self.statusBar().showMessage(f"Index termine: {report.indexed} indexes, {report.skipped} ignores, {report.failed} echecs.", 8000)
 
@@ -413,6 +433,7 @@ class MainWindow(PathActionsMixin, ExportActionsMixin, NavigationActionsMixin, Q
 
     def on_worker_failed(self, message: str) -> None:
         self.set_busy(False)
+        self.index_progress.hide()
         self.fill_table(self.search_table, [["error", "", "", "", "", message, "", ""]])
         self.preview_pane.clear()
         QMessageBox.critical(self, "PlantTrace", message)
